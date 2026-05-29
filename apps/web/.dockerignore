@@ -1,0 +1,17 @@
+node_modules
+.next
+.turbo
+.git
+.gitignore
+Dockerfile
+.dockerignore
+README*
+AGENTS.md
+CLAUDE.md
+.env
+.env.*
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+bun-debug.log*
+.DS_Store
