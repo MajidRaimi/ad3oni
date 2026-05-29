@@ -18,6 +18,7 @@ This repository is a Turborepo monorepo that houses the Ad3oni platform: a Next.
   - [Running the apps](#running-the-apps)
   - [Endpoints](#endpoints)
 - [Links](#links-)
+- [Developers](#developers-)
 - [Contributing](#contributing-)
 
 ---
@@ -106,6 +107,15 @@ The API also exposes interactive docs at http://localhost:8000/docs.
 - 🌐 [Ad3oni Website](https://www.ad3oni.com) for prayer times and personalized reminders.
 - 🤖 [Invite the Ad3oni Discord Bot](https://discord.com/api/oauth2/authorize?client_id=1159198588782518292&permissions=26624&scope=bot%20applications.commands) to your server.
 - 📱 iOS and Android applications are coming soon.
+
+---
+
+## Developers 👥
+
+| Developer        | Email                                                |
+| ---------------- | ---------------------------------------------------- |
+| Majid Al-Raimi   | [majidsraimi@gmail.com](mailto:majidsraimi@gmail.com) |
+| Rakkan Al-Yaqout | [rakanyaqoot@hotmail.com](mailto:rakanyaqoot@hotmail.com) |
 
 ---
 
