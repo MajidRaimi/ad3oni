@@ -1,0 +1,16 @@
+{
+  "name": "ad3oni",
+  "version": "0.0.1",
+  "private": true,
+  "packageManager": "bun@1.3.14",
+  "workspaces": ["apps/web"],
+  "scripts": {
+    "dev": "mprocs",
+    "build": "turbo run build",
+    "lint": "turbo run lint"
+  },
+  "devDependencies": {
+    "mprocs": "^0.9.3",
+    "turbo": "^2.9.16"
+  }
+}
