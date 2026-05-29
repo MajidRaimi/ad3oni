@@ -3,3 +3,5 @@ procs:
     shell: "cd apps/api && uv run uvicorn src.main:app --reload --port 8000"
   web:
     shell: "cd apps/web && bun run dev"
+  brand:
+    shell: "cd apps/brand && bun run dev"

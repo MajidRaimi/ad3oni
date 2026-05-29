@@ -6,7 +6,7 @@
 
 Ad3oni is an open-source Islamic system designed to help you stay connected with your daily prayers. It provides prayer reminders through various platforms, including Twitter, a website, and upcoming iOS and Android applications. You can also invite the Ad3oni Discord bot to your server for personalized prayer reminders.
 
-This repository is a Turborepo monorepo that houses the Ad3oni platform: a Next.js web app and a FastAPI backend.
+This repository is a Turborepo monorepo that houses the Ad3oni platform: a Next.js web app, a FastAPI backend, and a brand & design-system deck.
 
 ## Table of Contents
 
@@ -28,6 +28,7 @@ This repository is a Turborepo monorepo that houses the Ad3oni platform: a Next.
 - **Monorepo**: Turborepo
 - **Web**: Next.js (App Router) + TypeScript + Tailwind CSS
 - **API**: FastAPI + Uvicorn (Python)
+- **Brand**: TanStack Start + Tailwind CSS v4 + shadcn/ui (the design-system deck)
 - **Package managers**: Bun (JavaScript) and uv (Python)
 - **Dev orchestration**: mprocs
 
@@ -39,8 +40,9 @@ This repository is a Turborepo monorepo that houses the Ad3oni platform: a Next.
 ad3oni/
 ├── apps/
 │   ├── web/      Next.js app (App Router, TypeScript, Tailwind)
-│   └── api/      FastAPI service (managed with uv)
-├── mprocs.yaml   Runs web and api together in development
+│   ├── api/      FastAPI service (managed with uv)
+│   └── brand/    Brand & design-system deck (TanStack Start, shadcn/ui)
+├── mprocs.yaml   Runs web, api, and brand together in development
 ├── turbo.json    Turborepo task pipeline
 └── package.json  Workspaces and root scripts
 ```
@@ -78,17 +80,23 @@ Start the entire stack (web + api) from the repository root with a single comman
 bun run dev
 ```
 
-This launches mprocs, which runs both processes side by side:
+This launches mprocs, which runs all processes side by side:
 
 - **Web**: http://localhost:3000
 - **API**: http://localhost:8000
+- **Brand**: http://localhost:3001
 
 You can also run each app on its own:
 
 ```bash
 cd apps/web && bun run dev
 cd apps/api && uv run uvicorn src.main:app --reload --port 8000
+cd apps/brand && bun run dev
 ```
+
+### Brand & design system
+
+The `apps/brand` deck is the living design system for Ad3oni: logo usage, colors, typography, iconography, foundations, and live shadcn components, all themed to the Ad3oni identity. Navigate it with the arrow keys (RTL: left moves forward) or the on-screen controls. The Resources slide exports the design tokens as `theme.css` and `tokens.json` so anyone can build on-brand.
 
 ### Endpoints
 
