@@ -1,0 +1,61 @@
+import { Globe } from "lucide-react";
+import type { ComponentType, SVGProps } from "react";
+import { AndroidIcon, AppleIcon, DiscordIcon, XIcon } from "../components/icons";
+
+export type Platform = {
+  key: string;
+  name: string;
+  handle: string;
+  description: string;
+  href: string;
+  status: "live" | "soon";
+  icon: ComponentType<SVGProps<SVGSVGElement>>;
+};
+
+export const platforms: Platform[] = [
+  {
+    key: "discord",
+    name: "ديسكورد",
+    handle: "بوت ادْعُونِي",
+    description: "ادعُ البوت إلى خادمك ليذكّر أعضاءك بدعاء اليوم تلقائيًا.",
+    href: "https://discord.com/api/oauth2/authorize?client_id=1159198588782518292&permissions=26624&scope=bot%20applications.commands",
+    status: "live",
+    icon: DiscordIcon,
+  },
+  {
+    key: "x",
+    name: "إكس",
+    handle: "@ad3oni_",
+    description: "دعاء يومي يصلك في موجزك، تشاركه بضغطة واحدة.",
+    href: "https://twitter.com/ad3oni_",
+    status: "live",
+    icon: XIcon,
+  },
+  {
+    key: "web",
+    name: "الموقع",
+    handle: "ad3oni.com",
+    description: "افتح الموقع في أي وقت لتقرأ دعاء اليوم وتشارك دعاءك.",
+    href: "https://www.ad3oni.com",
+    status: "live",
+    icon: Globe,
+  },
+  {
+    key: "ios",
+    name: "آيفون",
+    handle: "App Store",
+    description: "تطبيق ادْعُونِي لنظام iOS، تذكير بالدعاء بين يديك.",
+    href: "#",
+    status: "soon",
+    icon: AppleIcon,
+  },
+  {
+    key: "android",
+    name: "أندرويد",
+    handle: "Google Play",
+    description: "تطبيق ادْعُونِي لنظام Android، قريبًا على جهازك.",
+    href: "#",
+    status: "soon",
+    icon: AndroidIcon,
+  },
+];
