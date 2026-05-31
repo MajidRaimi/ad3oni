@@ -10,17 +10,30 @@ export type Platform = {
   href: string;
   status: "live" | "soon";
   icon: ComponentType<SVGProps<SVGSVGElement>>;
+  steps: string[];
+  features: string[];
 };
 
 export const platforms: Platform[] = [
   {
-    key: "discord",
-    name: "ديسكورد",
-    handle: "بوت ادْعُونِي",
-    description: "ادعُ البوت إلى خادمك ليذكّر أعضاءك بدعاء اليوم تلقائيًا.",
-    href: "https://discord.com/api/oauth2/authorize?client_id=1159198588782518292&permissions=26624&scope=bot%20applications.commands",
+    key: "web",
+    name: "الموقع",
+    handle: "ad3oni.com",
+    description: "افتح الموقع في أي وقت لتقرأ دعاء اليوم وتشارك دعاءك.",
+    href: "https://www.ad3oni.com",
     status: "live",
-    icon: DiscordIcon,
+    icon: Globe,
+    steps: [
+      "افتح ad3oni.com في أي وقت",
+      "اقرأ دعاء اليوم المتجدّد",
+      "شارك دعاءك بضغطة واحدة",
+    ],
+    features: [
+      "دعاء يومي متجدّد",
+      "تصفّح حسب الفئة",
+      "مشاركة دعائك",
+      "بحث في الأدعية",
+    ],
   },
   {
     key: "x",
@@ -30,15 +43,37 @@ export const platforms: Platform[] = [
     href: "https://twitter.com/ad3oni_",
     status: "live",
     icon: XIcon,
+    steps: [
+      "تابِع حساب @ad3oni_",
+      "يصلك دعاء اليوم في موجزك",
+      "أعد نشره لمن تحب",
+    ],
+    features: [
+      "تغريدة دعاء يومية",
+      "مشاركة بنقرة",
+      "تذكير للمتابعين",
+      "أرشيف الأدعية",
+    ],
   },
   {
-    key: "web",
-    name: "الموقع",
-    handle: "ad3oni.com",
-    description: "افتح الموقع في أي وقت لتقرأ دعاء اليوم وتشارك دعاءك.",
-    href: "https://www.ad3oni.com",
+    key: "discord",
+    name: "ديسكورد",
+    handle: "بوت ادْعُونِي",
+    description: "ادعُ البوت إلى خادمك ليذكّر أعضاءك بدعاء اليوم تلقائيًا.",
+    href: "https://discord.com/api/oauth2/authorize?client_id=1159198588782518292&permissions=26624&scope=bot%20applications.commands",
     status: "live",
-    icon: Globe,
+    icon: DiscordIcon,
+    steps: [
+      "ادعُ البوت إلى خادمك",
+      "اختر القناة ووقت التذكير",
+      "يذكّر الأعضاء تلقائيًا كل يوم",
+    ],
+    features: [
+      "تذكير يومي تلقائي",
+      "أمر /دعاء",
+      "تخصيص الوقت والقناة",
+      "أدعية حسب الفئة",
+    ],
   },
   {
     key: "ios",
@@ -48,6 +83,17 @@ export const platforms: Platform[] = [
     href: "#",
     status: "soon",
     icon: AppleIcon,
+    steps: [
+      "حمّل التطبيق من App Store",
+      "فعّل التذكير اليومي",
+      "ادعُ أينما كنت",
+    ],
+    features: [
+      "إشعار يومي",
+      "ودجت على الشاشة",
+      "حفظ المفضلة",
+      "يعمل دون إنترنت",
+    ],
   },
   {
     key: "android",
@@ -57,5 +103,16 @@ export const platforms: Platform[] = [
     href: "#",
     status: "soon",
     icon: AndroidIcon,
+    steps: [
+      "حمّل التطبيق من Google Play",
+      "فعّل التذكير اليومي",
+      "ادعُ أينما كنت",
+    ],
+    features: [
+      "إشعار يومي",
+      "ودجت على الشاشة",
+      "حفظ المفضلة",
+      "يعمل دون إنترنت",
+    ],
   },
 ];

@@ -3,19 +3,12 @@
 import { useEffect } from "react";
 import { motion, useReducedMotion, type Variants } from "motion/react";
 import { useLockBodyScroll } from "@/shared/hooks/useLockBodyScroll";
+import { toArabicIndex } from "@/shared/lib/arabic";
 import { buttonVariants } from "@/shared/ui/button";
 import { navLinks } from "../data/navigation";
 import { platforms } from "../data/platforms";
 
 const livePlatforms = platforms.filter((platform) => platform.status === "live");
-
-const closedClip = "circle(0px at 44px 44px)";
-const openClip = "circle(150% at 44px 44px)";
-
-const toArabicIndex = (value: number) => {
-  const digits = value.toLocaleString("ar-EG");
-  return digits.length === 1 ? `٠${digits}` : digits;
-};
 
 type MobileMenuProps = {
   onClose: () => void;
@@ -52,10 +45,10 @@ export const MobileMenu = ({ onClose }: MobileMenuProps) => {
       role="dialog"
       aria-modal
       aria-label="القائمة"
-      initial={reduce ? { opacity: 0 } : { clipPath: closedClip }}
-      animate={reduce ? { opacity: 1 } : { clipPath: openClip }}
-      exit={reduce ? { opacity: 0 } : { clipPath: closedClip }}
-      transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
       className="night-bg fixed inset-0 z-40 flex flex-col px-8 pt-28 pb-12 md:hidden"
     >
       <motion.nav
@@ -72,7 +65,7 @@ export const MobileMenu = ({ onClose }: MobileMenuProps) => {
             onClick={onClose}
             className="group flex items-baseline gap-4 py-2"
           >
-            <span className="font-mono text-base text-lilac/60">
+            <span className="font-sans text-base text-lilac/60">
               {toArabicIndex(index + 1)}
             </span>
             <span className="font-display text-5xl text-paper transition-colors group-hover:text-lilac">
