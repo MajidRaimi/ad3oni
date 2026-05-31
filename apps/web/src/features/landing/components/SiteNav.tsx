@@ -23,7 +23,8 @@ export const SiteNav = () => {
     <header className="fixed inset-x-0 top-0 z-50">
       <nav
         className={cn(
-          "w-full border-b transition-all duration-700 ease-out",
+          "w-full border-b ease-out",
+          drawer.isOpen ? "transition-none" : "transition-all duration-700",
           glass
             ? "border-paper/10 bg-royal/70 backdrop-blur-xl"
             : "border-transparent bg-transparent",

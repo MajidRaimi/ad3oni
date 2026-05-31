@@ -14,14 +14,14 @@ export const BracePrayer = ({
 }: BracePrayerProps) => (
   <div
     className={cn(
-      "flex flex-col items-center justify-center gap-4 md:flex-row md:gap-10",
+      "flex items-center justify-center gap-3 md:gap-10",
       className,
     )}
   >
     <span
       aria-hidden
       className={cn(
-        "font-display leading-none text-current/40 select-none rotate-90 text-7xl md:rotate-0 md:text-[150px]",
+        "font-display leading-none text-current/40 select-none text-5xl md:text-[150px]",
         braceClassName,
       )}
     >
@@ -31,7 +31,7 @@ export const BracePrayer = ({
     <span
       aria-hidden
       className={cn(
-        "font-display leading-none text-current/40 select-none rotate-90 text-7xl md:rotate-0 md:text-[150px]",
+        "font-display leading-none text-current/40 select-none text-5xl md:text-[150px]",
         braceClassName,
       )}
     >

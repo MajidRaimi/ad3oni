@@ -1,0 +1,40 @@
+import { cn } from "@/shared/lib/utils";
+import { communityPrayers, type CommunityPrayer } from "../data/communityPrayers";
+import { PrayerCard } from "./PrayerCard";
+
+const rowOne = communityPrayers;
+const rowTwo = [...communityPrayers.slice(7), ...communityPrayers.slice(0, 7)];
+
+const MarqueeRow = ({
+  prayers,
+  reverse,
+}: {
+  prayers: CommunityPrayer[];
+  reverse?: boolean;
+}) => (
+  <div className="marquee-mask group overflow-x-clip overflow-y-visible py-3 motion-reduce:overflow-x-auto">
+    <div
+      className={cn(
+        "flex w-max group-hover:[animation-play-state:paused] motion-reduce:animate-none",
+        reverse ? "animate-marquee-reverse" : "animate-marquee",
+      )}
+    >
+      {[...prayers, ...prayers].map((prayer, index) => (
+        <div
+          key={`${prayer.id}-${index}`}
+          aria-hidden={index >= prayers.length}
+          className="w-[240px] shrink-0 px-3 md:w-[280px]"
+        >
+          <PrayerCard prayer={prayer} />
+        </div>
+      ))}
+    </div>
+  </div>
+);
+
+export const PrayerMarquee = () => (
+  <div dir="ltr" className="flex flex-col gap-5">
+    <MarqueeRow prayers={rowOne} />
+    <MarqueeRow prayers={rowTwo} reverse />
+  </div>
+);

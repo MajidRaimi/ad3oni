@@ -129,3 +129,31 @@
 :is(h1, h2, h3, h4, p).font-display {
   line-height: 1.8;
 }
+
+@theme {
+  --animate-marquee: ad3oni-marquee 64s linear infinite;
+  --animate-marquee-reverse: ad3oni-marquee-reverse 78s linear infinite;
+}
+
+@keyframes ad3oni-marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@keyframes ad3oni-marquee-reverse {
+  from {
+    transform: translateX(-50%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@utility marquee-mask {
+  -webkit-mask-image: linear-gradient(to right, transparent, #000 7%, #000 93%, transparent);
+  mask-image: linear-gradient(to right, transparent, #000 7%, #000 93%, transparent);
+}
