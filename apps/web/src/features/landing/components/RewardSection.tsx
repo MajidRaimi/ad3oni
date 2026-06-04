@@ -4,7 +4,7 @@ import { Reveal } from "./Reveal";
 import { SectionHeading } from "./SectionHeading";
 
 export const RewardSection = () => (
-  <section id="reward" className="night-bg px-6 py-28 text-paper md:py-36">
+  <section id="reward" className="night-bg px-6 py-20 text-paper md:py-28">
     <div className="mx-auto max-w-6xl">
       <SectionHeading label="الأجر" title="أجرٌ يجري إليك" tone="dark" />
 

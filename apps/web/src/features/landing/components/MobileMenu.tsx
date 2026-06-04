@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import { motion, useReducedMotion, type Variants } from "motion/react";
 import { useLockBodyScroll } from "@/shared/hooks/useLockBodyScroll";
 import { toArabicIndex } from "@/shared/lib/arabic";
-import { buttonVariants } from "@/shared/ui/button";
+import { ShareButton } from "@/features/share/components/ShareButton";
 import { navLinks } from "../data/navigation";
 import { platforms } from "../data/platforms";
 
@@ -81,13 +81,9 @@ export const MobileMenu = ({ onClose }: MobileMenuProps) => {
         animate="visible"
         className="flex flex-col gap-8"
       >
-        <a
-          href="#share"
-          onClick={onClose}
-          className={buttonVariants({ variant: "paper", size: "lg", className: "w-full" })}
-        >
+        <ShareButton variant="paper" size="lg" className="w-full" onClick={onClose}>
           شاركنا دعاءك
-        </a>
+        </ShareButton>
         <div className="flex items-center gap-6 text-paper/60">
           {livePlatforms.map((platform) => {
             const Icon = platform.icon;

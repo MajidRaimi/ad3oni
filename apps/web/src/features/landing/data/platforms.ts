@@ -8,6 +8,7 @@ export type Platform = {
   handle: string;
   description: string;
   href: string;
+  cta: string;
   status: "live" | "soon";
   icon: ComponentType<SVGProps<SVGSVGElement>>;
   steps: string[];
@@ -21,6 +22,7 @@ export const platforms: Platform[] = [
     handle: "ad3oni.com",
     description: "افتح الموقع في أي وقت لتقرأ دعاء اليوم وتشارك دعاءك.",
     href: "https://www.ad3oni.com",
+    cta: "شاركنا دعاءك",
     status: "live",
     icon: Globe,
     steps: [
@@ -41,6 +43,7 @@ export const platforms: Platform[] = [
     handle: "@ad3oni_",
     description: "دعاء يومي يصلك في موجزك، تشاركه بضغطة واحدة.",
     href: "https://twitter.com/ad3oni_",
+    cta: "تابِعنا على إكس",
     status: "live",
     icon: XIcon,
     steps: [
@@ -59,12 +62,13 @@ export const platforms: Platform[] = [
     key: "discord",
     name: "ديسكورد",
     handle: "بوت ادْعُونِي",
-    description: "ادعُ البوت إلى خادمك ليذكّر أعضاءك بدعاء اليوم تلقائيًا.",
+    description: "ادعُ البوت إلى سيرفرك ليذكّر أعضاءك بدعاء اليوم تلقائيًا.",
     href: "https://discord.com/api/oauth2/authorize?client_id=1159198588782518292&permissions=26624&scope=bot%20applications.commands",
+    cta: "أضِف البوت لسيرفرك",
     status: "live",
     icon: DiscordIcon,
     steps: [
-      "ادعُ البوت إلى خادمك",
+      "ادعُ البوت إلى سيرفرك",
       "اختر القناة ووقت التذكير",
       "يذكّر الأعضاء تلقائيًا كل يوم",
     ],
@@ -81,6 +85,7 @@ export const platforms: Platform[] = [
     handle: "App Store",
     description: "تطبيق ادْعُونِي لنظام iOS، تذكير بالدعاء بين يديك.",
     href: "#",
+    cta: "حمّله من App Store",
     status: "soon",
     icon: AppleIcon,
     steps: [
@@ -101,6 +106,7 @@ export const platforms: Platform[] = [
     handle: "Google Play",
     description: "تطبيق ادْعُونِي لنظام Android، قريبًا على جهازك.",
     href: "#",
+    cta: "حمّله من Google Play",
     status: "soon",
     icon: AndroidIcon,
     steps: [

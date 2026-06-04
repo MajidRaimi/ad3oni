@@ -3,8 +3,8 @@ import { Reveal } from "./Reveal";
 import { SectionHeading } from "./SectionHeading";
 
 export const PlatformsSection = () => (
-  <section id="platforms" className="bg-muted/40 px-6 py-28 md:py-36">
-    <div className="mx-auto max-w-6xl">
+  <section id="platforms" className="bg-muted/40 py-20 md:py-28">
+    <div className="mx-auto max-w-7xl px-6 md:px-10">
       <SectionHeading
         label="أينما كنت"
         title="منصّاتنا"

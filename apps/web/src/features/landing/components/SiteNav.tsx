@@ -5,8 +5,8 @@ import { AnimatePresence } from "motion/react";
 import { useDisclosure } from "@/shared/hooks/useDisclosure";
 import { useHideOnScroll } from "@/shared/hooks/useHideOnScroll";
 import { useScrolledPastViewport } from "@/shared/hooks/useScrolledPastViewport";
-import { buttonVariants } from "@/shared/ui/button";
 import { cn } from "@/shared/lib/utils";
+import { ShareButton } from "@/features/share/components/ShareButton";
 import { navLinks } from "../data/navigation";
 import { MenuToggle } from "./MenuToggle";
 import { MobileMenu } from "./MobileMenu";
@@ -50,9 +50,9 @@ export const SiteNav = () => {
                 {link.label}
               </a>
             ))}
-            <a href="#share" className={buttonVariants({ variant: "paper", size: "sm" })}>
+            <ShareButton variant="paper" size="sm">
               شاركنا دعاءك
-            </a>
+            </ShareButton>
           </div>
 
           <div className="relative z-50 md:hidden">

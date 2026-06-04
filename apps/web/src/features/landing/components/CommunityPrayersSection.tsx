@@ -1,10 +1,10 @@
-import { buttonVariants } from "@/shared/ui/button";
+import { ShareButton } from "@/features/share/components/ShareButton";
 import { PrayerMarquee } from "./PrayerMarquee";
 import { Reveal } from "./Reveal";
 import { SectionHeading } from "./SectionHeading";
 
 export const CommunityPrayersSection = () => (
-  <section id="prayers" className="overflow-hidden bg-paper py-28 md:py-36">
+  <section id="prayers" className="overflow-hidden bg-paper py-20 md:py-28">
     <div className="mx-auto max-w-6xl px-6">
       <SectionHeading
         label="من أدعيتكم"
@@ -17,13 +17,10 @@ export const CommunityPrayersSection = () => (
       <PrayerMarquee />
     </Reveal>
 
-    <div className="mx-auto mt-16 flex max-w-6xl justify-center px-6">
-      <a
-        href="#share"
-        className={buttonVariants({ variant: "default", size: "lg" })}
-      >
+    <div className="mx-auto mt-12 flex max-w-6xl justify-center px-6 md:mt-16">
+      <ShareButton variant="default" size="lg">
         شارك دعاءك أنت أيضًا
-      </a>
+      </ShareButton>
     </div>
   </section>
 );

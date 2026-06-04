@@ -75,7 +75,18 @@
   }
 
   html {
-    scrollbar-gutter: stable;
+    scrollbar-width: thin;
+    scrollbar-color: color-mix(in srgb, var(--color-royal) 40%, transparent) transparent;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    html {
+      scroll-behavior: smooth;
+    }
+  }
+
+  section[id] {
+    scroll-margin-top: 6rem;
   }
 
   html,
@@ -95,15 +106,18 @@
   }
 
   ::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
+    width: 6px;
+    height: 6px;
   }
   ::-webkit-scrollbar-track {
     background: transparent;
   }
   ::-webkit-scrollbar-thumb {
-    background: color-mix(in srgb, var(--color-royal) 60%, transparent);
+    background: color-mix(in srgb, var(--color-royal) 40%, transparent);
     border-radius: 999px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: color-mix(in srgb, var(--color-royal) 65%, transparent);
   }
 }
 
