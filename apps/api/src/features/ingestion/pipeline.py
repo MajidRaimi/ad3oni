@@ -21,16 +21,16 @@ async def run_pipeline(context: WorkerContext, prayer_id: str) -> None:
         logger.info("prayer_skipped id=%s reason=not_claimable", prayer_id)
         return
 
-    original_text = claimed.get("text_original") or claimed.get("text") or ""
+    source_text = claimed.get("text") or ""
 
-    compliance = await review_compliance(context, original_text)
+    compliance = await review_compliance(context, source_text)
     if not compliance.compliant:
         await finalize_rejected(context, prayer_id, compliance.violation_type, compliance.reason)
         logger.info("prayer_rejected id=%s violation=%s", prayer_id, compliance.violation_type)
         return
 
-    spelling = await correct_spelling(context, original_text)
-    corrected = spelling.corrected_text.strip() or original_text
+    spelling = await correct_spelling(context, source_text)
+    corrected = spelling.corrected_text.strip() or source_text
 
     duplicate = await find_duplicate(context, corrected)
     if duplicate.duplicate_of_id is not None:
@@ -38,15 +38,13 @@ async def run_pipeline(context: WorkerContext, prayer_id: str) -> None:
         logger.info("prayer_duplicate id=%s of=%s", prayer_id, duplicate.duplicate_of_id)
         return
 
-    diacritization = await diacritize(context, corrected)
+    text = await diacritize(context, corrected)
     category = await categorize(context, corrected)
 
     await finalize_confirmed(
         context,
         prayer_id,
-        text=corrected,
-        diacritized=diacritization.diacritized_text,
-        confidence=diacritization.confidence,
+        text=text,
         outcome=duplicate,
         category_id=category.category_id,
         type_id=category.type_id,

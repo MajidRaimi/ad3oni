@@ -11,7 +11,6 @@ def to_prayer(record: dict[str, Any]) -> Prayer:
     return Prayer(
         id=record["id"],
         text=record["text"],
-        text_diacritized=record.get("text_diacritized"),
         status=record["status"],
         category=to_category(category_record) if category_record else None,
         type=to_prayer_type(type_record) if type_record else None,

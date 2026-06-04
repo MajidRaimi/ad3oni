@@ -20,7 +20,6 @@ class DedupJudgeResult(BaseModel):
 
 class DiacritizationResult(BaseModel):
     diacritized_text: str
-    confidence: float
 
 
 class CategorizationResult(BaseModel):

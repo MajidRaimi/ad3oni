@@ -20,7 +20,6 @@ export type PrayerType = {
 export type Prayer = {
   id: string;
   text: string;
-  textDiacritized?: string | null;
   status: string;
   category?: Category | null;
   type?: PrayerType | null;

@@ -43,6 +43,10 @@ class Settings(BaseSettings):
     diacritization_effort: str = "medium"
     categorization_effort: str = "medium"
 
+    diacritization_mode: Literal["partial", "full"] = "partial"
+    diacritization_max_attempts: int = 2
+    diacritization_verify_enabled: bool = True
+
     worker_max_jobs: int = 1
     job_max_tries: int = 3
     job_timeout: int = 120

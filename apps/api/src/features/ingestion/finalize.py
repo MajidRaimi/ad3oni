@@ -48,8 +48,6 @@ async def finalize_confirmed(
     prayer_id: str,
     *,
     text: str,
-    diacritized: str,
-    confidence: float,
     outcome: DuplicateOutcome,
     category_id: str,
     type_id: str,
@@ -60,14 +58,12 @@ async def finalize_confirmed(
         {
             "status": "confirmed",
             "text": text,
-            "text_diacritized": diacritized,
             "normalized": outcome.normalized,
             "text_hash": outcome.text_hash,
             "category": category_id,
             "type": type_id,
             "ai_model": context.settings.ai_model,
             "processed_at": _timestamp(),
-            "diacritization_confidence": confidence,
         },
     )
 

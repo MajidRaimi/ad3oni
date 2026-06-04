@@ -1,5 +1,9 @@
 from src.shared.arabic.hashing import text_hash
-from src.shared.arabic.normalize import normalize_arabic, strip_tashkil
+from src.shared.arabic.normalize import (
+    harakat_preserves_wording,
+    normalize_arabic,
+    strip_tashkil,
+)
 from src.shared.arabic.slugify import slugify_arabic
 
 
@@ -35,3 +39,15 @@ def test_slugify_produces_ascii_slug() -> None:
 def test_slugify_falls_back_when_no_letters() -> None:
     slug = slugify_arabic("123 !!!")
     assert slug.startswith("item-")
+
+
+def test_harakat_preserves_wording_accepts_harakat_only_change() -> None:
+    source = "اللهم اجعل القران العظيم ربيع قلوبنا ونور صدورنا"
+    diacritized = "اللَّهُمَّ اجْعَلِ الْقُرْآنَ الْعَظِيمَ رَبِيعَ قُلُوبِنَا وَنُورَ صُدُورِنَا"
+    assert harakat_preserves_wording(source, diacritized) is True
+
+
+def test_harakat_preserves_wording_rejects_dropped_word() -> None:
+    source = "ربيع قلوبنا ونور صدورنا"
+    mutated = "ربيعا قلوبنا نورا صدورنا"
+    assert harakat_preserves_wording(source, mutated) is False
