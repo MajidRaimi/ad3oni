@@ -5,7 +5,7 @@ import { Reveal } from "./Reveal";
 import { SectionHeading } from "./SectionHeading";
 
 export const HowItWorksSection = () => (
-  <section id="how" className="bg-muted/40 px-6 py-28 md:py-36">
+  <section id="how" className="bg-muted/40 px-6 py-20 md:py-28">
     <div className="mx-auto max-w-6xl">
       <SectionHeading label="كيف تعمل" title="ثلاث خطوات بسيطة" />
 

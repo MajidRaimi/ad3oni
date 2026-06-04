@@ -1,6 +1,7 @@
 import { ghafirVerse } from "../data/prayer";
 import { BracePrayer } from "./BracePrayer";
 import { Reveal } from "./Reveal";
+import { SectionHeading } from "./SectionHeading";
 
 const paragraphs = [
   "ادْعُونِي مبادرة خيرية مفتوحة المصدر، تهدف إلى تذكير الناس بالدعاء وذكر الله. بدأت بفكرة بسيطة وجميلة: أن يصلك دعاء كل يوم عبر منصّاتك المفضلة.",
@@ -8,16 +9,9 @@ const paragraphs = [
 ];
 
 export const AboutSection = () => (
-  <section id="about" className="bg-paper px-6 py-28 md:py-36">
+  <section id="about" className="bg-paper px-6 py-20 md:py-28">
     <div className="mx-auto max-w-6xl">
-      <Reveal>
-        <div className="mb-16 flex flex-col items-center gap-3 text-center">
-          <span className="text-sm tracking-[0.18em] text-violet">عن المبادرة</span>
-          <h2 className="font-display text-4xl text-royal md:text-5xl">
-            عن ادْعُونِي
-          </h2>
-        </div>
-      </Reveal>
+      <SectionHeading label="عن المبادرة" title="عن ادْعُونِي" />
 
       <div className="grid items-stretch gap-8 lg:grid-cols-2">
         <Reveal>

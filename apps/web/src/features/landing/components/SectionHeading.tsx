@@ -15,7 +15,7 @@ export const SectionHeading = ({
   tone = "light",
 }: SectionHeadingProps) => (
   <Reveal>
-    <div className="mb-16 flex flex-col items-center gap-3 text-center">
+    <div className="mb-12 flex flex-col items-center gap-3 text-center md:mb-16">
       <span
         className={cn(
           "text-sm tracking-[0.18em]",

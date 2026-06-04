@@ -47,11 +47,13 @@ const DiscordFrame = () => (
 
 const WebFrame = () => (
   <div className="overflow-hidden rounded-2xl border border-border bg-paper">
-    <div dir="ltr" className="flex items-center gap-1.5 border-b border-border px-4 py-3">
-      <span className="size-2.5 rounded-full bg-neutral/25" />
-      <span className="size-2.5 rounded-full bg-neutral/25" />
-      <span className="size-2.5 rounded-full bg-neutral/25" />
-      <span className="ms-3 rounded-md bg-muted px-3 py-1 font-mono text-xs text-neutral">
+    <div dir="ltr" className="relative flex items-center border-b border-border px-4 py-3">
+      <div className="flex items-center gap-1.5">
+        <span className="size-2.5 rounded-full bg-neutral/25" />
+        <span className="size-2.5 rounded-full bg-neutral/25" />
+        <span className="size-2.5 rounded-full bg-neutral/25" />
+      </div>
+      <span className="absolute left-1/2 -translate-x-1/2 rounded-md bg-muted px-3 py-1 font-mono text-xs text-neutral">
         ad3oni.com
       </span>
     </div>
@@ -73,7 +75,7 @@ const NotificationFrame = ({ platform }: { platform: Platform }) => {
         <div className="flex-1">
           <div className="flex items-center justify-between">
             <p className="font-display text-sm text-royal">ادْعُونِي</p>
-            <span className="font-mono text-[10px] text-neutral">الآن</span>
+            <span className="font-sans text-[10px] text-neutral">الآن</span>
           </div>
           <p className="text-xs text-neutral">حان وقت دعاء اليوم</p>
         </div>

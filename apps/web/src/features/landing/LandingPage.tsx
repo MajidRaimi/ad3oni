@@ -7,6 +7,7 @@ import { RewardSection } from "./components/RewardSection";
 import { ShareSection } from "./components/ShareSection";
 import { SiteFooter } from "./components/SiteFooter";
 import { SiteNav } from "./components/SiteNav";
+import { ShareModal } from "@/features/share/components/ShareModal";
 
 export const LandingPage = () => (
   <>
@@ -21,5 +22,6 @@ export const LandingPage = () => (
       <ShareSection />
     </main>
     <SiteFooter />
+    <ShareModal />
   </>
 );

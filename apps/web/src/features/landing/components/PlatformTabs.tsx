@@ -6,6 +6,8 @@ import { useRef, useState, type KeyboardEvent } from "react";
 import { toArabicIndex } from "@/shared/lib/arabic";
 import { cn } from "@/shared/lib/utils";
 import { buttonVariants } from "@/shared/ui/button";
+import { IsolatedHandles } from "@/shared/ui/IsolatedHandles";
+import { ShareButton } from "@/features/share/components/ShareButton";
 import { platforms } from "../data/platforms";
 import { PlatformPreview } from "./PlatformPreview";
 
@@ -35,7 +37,7 @@ export const PlatformTabs = () => {
   };
 
   return (
-    <div className="mx-auto max-w-5xl">
+    <div className="w-full">
       <div
         role="tablist"
         aria-label="منصّاتنا"
@@ -99,7 +101,13 @@ export const PlatformTabs = () => {
                     </span>
                   )}
                 </div>
-                <span dir="ltr" className="self-start font-mono text-xs text-neutral/70">
+                <span
+                  dir="ltr"
+                  className={cn(
+                    "self-start text-xs text-neutral/70",
+                    /[؀-ۿ]/.test(platform.handle) ? "font-sans" : "font-mono",
+                  )}
+                >
                   <bdi>{platform.handle}</bdi>
                 </span>
               </div>
@@ -112,7 +120,9 @@ export const PlatformTabs = () => {
                       <span className="font-sans text-sm font-bold text-violet/60">
                         <bdi>{toArabicIndex(index + 1)}</bdi>
                       </span>
-                      <span className="text-[15px] leading-[1.8] text-neutral">{step}</span>
+                      <span className="text-[15px] leading-[1.8] text-neutral">
+                        <IsolatedHandles text={step} />
+                      </span>
                     </li>
                   ))}
                 </ol>
@@ -130,7 +140,12 @@ export const PlatformTabs = () => {
                 </ul>
               </div>
 
-              {isLive ? (
+              {platform.key === "web" ? (
+                <ShareButton variant="default" size="lg" className="self-start">
+                  {platform.cta}
+                  <ArrowUpLeft className="size-4" />
+                </ShareButton>
+              ) : isLive ? (
                 <a
                   href={platform.href}
                   target="_blank"
@@ -141,7 +156,7 @@ export const PlatformTabs = () => {
                     className: "self-start",
                   })}
                 >
-                  افتح {platform.name}
+                  {platform.cta}
                   <ArrowUpLeft className="size-4" />
                 </a>
               ) : (
@@ -157,7 +172,7 @@ export const PlatformTabs = () => {
               )}
             </div>
 
-            <div className="flex items-center justify-center rounded-2xl bg-muted/40 p-6 md:p-8">
+            <div className="order-first flex items-center justify-center rounded-2xl bg-muted/40 p-6 md:order-none md:p-8">
               <div className="w-full max-w-sm">
                 <PlatformPreview platform={platform} />
               </div>
