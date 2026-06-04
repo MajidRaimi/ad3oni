@@ -1,16 +1,17 @@
 import pytest
 from fastapi.testclient import TestClient
 from src.main import create_app
-from src.shared.dependencies import get_pocketbase
+from src.shared.dependencies import get_pocketbase, get_queue
 from src.shared.ratelimit.limiter import limiter
 
-from tests.conftest import FakePocketBase
+from tests.conftest import FakePocketBase, FakeQueue
 
 
 @pytest.fixture
 def limited_client() -> TestClient:
     app = create_app()
     app.dependency_overrides[get_pocketbase] = lambda: FakePocketBase()
+    app.dependency_overrides[get_queue] = lambda: FakeQueue()
     limiter.reset()
     limiter.enabled = True
     return TestClient(app)

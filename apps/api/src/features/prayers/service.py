@@ -1,5 +1,7 @@
 from typing import Any
 
+from arq import ArqRedis
+
 from src.features.prayers.mappers import to_prayer
 from src.features.prayers.schema import (
     Prayer,
@@ -10,16 +12,17 @@ from src.features.prayers.schema import (
 from src.shared.errors.exceptions import NotFoundError, ValidationError
 from src.shared.pocketbase.client import PocketBaseClient
 from src.shared.pocketbase.filters import combine, quote
+from src.shared.queue.pool import enqueue_process_prayer
 from src.shared.schema.pagination import Page, to_page
 
 _CONFIRMED = 'status = "confirmed"'
 _PRAYER_EXPAND = "category.group,type"
-_DEFAULT_TYPE_SLUG = "custom"
 
 
 class PrayerService:
-    def __init__(self, pocketbase: PocketBaseClient) -> None:
+    def __init__(self, pocketbase: PocketBaseClient, queue: ArqRedis) -> None:
         self._pocketbase = pocketbase
+        self._queue = queue
 
     async def list_prayers(
         self,
@@ -86,24 +89,26 @@ class PrayerService:
         return to_prayer(items[0])
 
     async def submit_prayer(self, submission: PrayerSubmission) -> SubmittedPrayer:
-        category = await self._resolve_slug("categories", submission.category)
-        if category is None:
-            raise ValidationError(f"Unknown category '{submission.category}'")
-
-        type_slug = submission.type or _DEFAULT_TYPE_SLUG
-        prayer_type = await self._resolve_slug("types", type_slug)
-        if submission.type is not None and prayer_type is None:
-            raise ValidationError(f"Unknown type '{submission.type}'")
-
         payload: dict[str, Any] = {
+            "text_original": submission.text,
             "text": submission.text,
             "status": "pending",
-            "category": category["id"],
         }
-        if prayer_type is not None:
+
+        if submission.category is not None:
+            category = await self._resolve_slug("categories", submission.category)
+            if category is None:
+                raise ValidationError(f"Unknown category '{submission.category}'")
+            payload["category"] = category["id"]
+
+        if submission.type is not None:
+            prayer_type = await self._resolve_slug("types", submission.type)
+            if prayer_type is None:
+                raise ValidationError(f"Unknown type '{submission.type}'")
             payload["type"] = prayer_type["id"]
 
         created = await self._pocketbase.create_record("prayers", payload)
+        await enqueue_process_prayer(self._queue, created["id"])
         return SubmittedPrayer(
             id=created["id"],
             status=created["status"],

@@ -46,7 +46,20 @@ def test_submit_prayer_creates_pending(client: TestClient) -> None:
     submitted = client.fake.created[0]  # type: ignore[attr-defined]
     assert submitted["status"] == "pending"
     assert submitted["category"] == "c1"
-    assert submitted["type"] == "t1"
+    assert submitted["text_original"] == "اللهم ارزقني الصبر"
+    jobs = client.queue.jobs  # type: ignore[attr-defined]
+    assert jobs == [("process_prayer", ("new1",))]
+
+
+def test_submit_prayer_without_category(client: TestClient) -> None:
+    response = client.post(
+        "/v1/prayers",
+        json={"text": "اللهم اشرح لي صدري"},
+    )
+    assert response.status_code == 201
+    submitted = client.fake.created[0]  # type: ignore[attr-defined]
+    assert "category" not in submitted
+    assert submitted["status"] == "pending"
 
 
 def test_submit_prayer_rejects_short_text(client: TestClient) -> None:

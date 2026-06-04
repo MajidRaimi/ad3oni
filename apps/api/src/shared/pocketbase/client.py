@@ -65,6 +65,16 @@ class PocketBaseClient:
         )
         return data or {}
 
+    async def update_record(
+        self, collection: str, record_id: str, payload: dict[str, Any]
+    ) -> dict[str, Any]:
+        data = await self._request(
+            "PATCH",
+            f"/api/collections/{collection}/records/{record_id}",
+            json=payload,
+        )
+        return data or {}
+
     async def _request(
         self,
         method: str,

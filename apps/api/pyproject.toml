@@ -1,6 +1,6 @@
 [project]
 name = "api"
-version = "0.1.1"
+version = "0.1.2"
 requires-python = ">=3.14"
 dependencies = [
     "fastapi==0.136.3",
@@ -9,6 +9,8 @@ dependencies = [
     "httpx==0.28.1",
     "openai==1.59.6",
     "slowapi==0.1.9",
+    "arq==0.28.0",
+    "redis==5.2.1",
 ]
 
 [dependency-groups]
