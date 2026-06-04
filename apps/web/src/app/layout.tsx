@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Rakkas, Geist_Mono } from "next/font/google";
 import localFont from "next/font/local";
+import { Providers } from "./providers";
 import "./globals.css";
 
 const rakkas = Rakkas({
@@ -49,7 +50,9 @@ export default function RootLayout({
       dir="rtl"
       className={`${rakkas.variable} ${tajawal.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full">{children}</body>
+      <body className="min-h-full">
+        <Providers>{children}</Providers>
+      </body>
     </html>
   );
 }
