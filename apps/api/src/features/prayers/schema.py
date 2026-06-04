@@ -27,7 +27,7 @@ class Prayer(CamelModel):
 
 class PrayerSubmission(CamelModel):
     text: PrayerText
-    category: TaxonomySlug
+    category: TaxonomySlug | None = None
     type: TaxonomySlug | None = None
 
 

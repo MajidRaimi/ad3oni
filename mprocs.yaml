@@ -1,6 +1,10 @@
 procs:
+  redis:
+    shell: "docker compose up redis"
   api:
     shell: "cd apps/api && uv run uvicorn src.main:app --reload --port 8000"
+  worker:
+    shell: "cd apps/api && uv run arq src.worker.WorkerSettings"
   web:
     shell: "cd apps/web && bun run dev"
   brand:

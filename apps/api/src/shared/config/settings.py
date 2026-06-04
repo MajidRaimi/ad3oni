@@ -33,7 +33,19 @@ class Settings(BaseSettings):
 
     openai_api_key: str = ""
     openai_base_url: str = "https://api.groq.com/openai/v1"
-    ai_model: str = "llama-3.3-70b-versatile"
+    ai_model: str = "openai/gpt-oss-120b"
+
+    redis_url: str = "redis://localhost:6379/0"
+
+    compliance_effort: str = "high"
+    spelling_effort: str = "low"
+    dedup_effort: str = "medium"
+    diacritization_effort: str = "medium"
+    categorization_effort: str = "medium"
+
+    worker_max_jobs: int = 1
+    job_max_tries: int = 3
+    job_timeout: int = 120
 
     submit_rate_limit: str = "5/minute"
 

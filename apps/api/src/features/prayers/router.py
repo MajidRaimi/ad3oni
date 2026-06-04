@@ -9,15 +9,15 @@ from src.features.prayers.schema import (
     SubmittedPrayer,
 )
 from src.features.prayers.service import PrayerService
-from src.shared.dependencies import PocketBaseDep
+from src.shared.dependencies import PocketBaseDep, QueueDep
 from src.shared.ratelimit.limiter import limiter, submit_rate_limit
 from src.shared.schema.pagination import Page
 
 router = APIRouter(prefix="/prayers", tags=["prayers"])
 
 
-def get_prayer_service(pocketbase: PocketBaseDep) -> PrayerService:
-    return PrayerService(pocketbase)
+def get_prayer_service(pocketbase: PocketBaseDep, queue: QueueDep) -> PrayerService:
+    return PrayerService(pocketbase, queue)
 
 
 PrayerServiceDep = Annotated[PrayerService, Depends(get_prayer_service)]

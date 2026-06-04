@@ -9,6 +9,7 @@ from src.shared.config.settings import get_settings
 from src.shared.lifespan.state import AppState
 from src.shared.logging.setup import get_logger
 from src.shared.pocketbase.client import PocketBaseClient
+from src.shared.queue.pool import create_arq_pool
 
 logger = get_logger("api.lifespan")
 
@@ -26,13 +27,18 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         )
         await pocketbase.authenticate()
         ai = create_ai_client(settings)
+        queue = await create_arq_pool(settings)
 
-        app.state.app_state = AppState(settings=settings, pocketbase=pocketbase, ai=ai)
+        app.state.app_state = AppState(
+            settings=settings, pocketbase=pocketbase, ai=ai, queue=queue
+        )
         logger.info("startup_complete environment=%s", settings.environment)
 
-        yield
-
-        logger.info("shutdown_complete")
+        try:
+            yield
+        finally:
+            await queue.aclose()
+            logger.info("shutdown_complete")
 
 
 def get_app_state(app: FastAPI) -> AppState:

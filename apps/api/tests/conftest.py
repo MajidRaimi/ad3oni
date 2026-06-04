@@ -4,7 +4,7 @@ from typing import Any
 import pytest
 from fastapi.testclient import TestClient
 from src.main import create_app
-from src.shared.dependencies import get_pocketbase
+from src.shared.dependencies import get_pocketbase, get_queue
 from src.shared.ratelimit.limiter import limiter
 
 GROUP: dict[str, Any] = {"id": "g1", "name": "المشاعر", "slug": "emotion"}
@@ -74,14 +74,25 @@ class FakePocketBase:
         }
 
 
+class FakeQueue:
+    def __init__(self) -> None:
+        self.jobs: list[tuple[str, tuple[Any, ...]]] = []
+
+    async def enqueue_job(self, name: str, *args: Any) -> None:
+        self.jobs.append((name, args))
+
+
 @pytest.fixture
 def client() -> Iterator[TestClient]:
     app = create_app()
     fake = FakePocketBase()
+    queue = FakeQueue()
     app.dependency_overrides[get_pocketbase] = lambda: fake
+    app.dependency_overrides[get_queue] = lambda: queue
     limiter.enabled = False
     test_client = TestClient(app)
     test_client.fake = fake  # type: ignore[attr-defined]
+    test_client.queue = queue  # type: ignore[attr-defined]
     yield test_client
     app.dependency_overrides.clear()
     limiter.enabled = True
