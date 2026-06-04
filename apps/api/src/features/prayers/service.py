@@ -90,7 +90,6 @@ class PrayerService:
 
     async def submit_prayer(self, submission: PrayerSubmission) -> SubmittedPrayer:
         payload: dict[str, Any] = {
-            "text_original": submission.text,
             "text": submission.text,
             "status": "pending",
         }

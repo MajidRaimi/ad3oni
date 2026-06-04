@@ -29,21 +29,44 @@ DEDUP_SYSTEM = (
     "set is_duplicate to false and duplicate_index to null."
 )
 
-DIACRITIZATION_SYSTEM = (
-    "You add full, correct Arabic diacritics (tashkil) to a supplication, the way a "
-    "vocalized Mushaf or du'a book would. Add harakat at the word level following correct "
-    "Arabic grammar, keep the wording exactly as given, and change nothing but the "
-    "diacritics. Return the diacritized text in diacritized_text and a confidence between "
-    "0 and 1 reflecting how certain you are of the vocalization."
+DIACRITIZATION_PARTIAL_SYSTEM = (
+    "You add selective Arabic diacritics (tashkil) to a supplication so it reads correctly. "
+    "Add harakat ONLY where they are needed to remove ambiguity or prevent a misreading: an "
+    "ambiguous verb voice or mood, a case ending that changes the meaning, or a word a fluent "
+    "reader could otherwise misread. Leave obvious and unambiguous letters bare. You MUST NOT "
+    "add, drop, reorder, or change any word or letter, including conjunctions such as وَ; change "
+    "nothing but the harakat. Return only the Arabic text in diacritized_text."
 )
+
+DIACRITIZATION_FULL_SYSTEM = (
+    "You add full, correct Arabic diacritics (tashkil) to a supplication, the way a vocalized "
+    "Mushaf or du'a book would. Add harakat at the word level following correct Arabic grammar. "
+    "You MUST NOT add, drop, reorder, or change any word or letter, including conjunctions such "
+    "as وَ; change nothing but the harakat. Return only the Arabic text in diacritized_text."
+)
+
+DIACRITIZATION_VERIFY_SYSTEM = (
+    "You are given a supplication in plain Arabic (the authoritative wording) and a "
+    "diacritized version of it. Review the harakat and fix any that are grammatically "
+    "wrong or that misvocalize a word, keeping the diacritization selective. You MUST keep "
+    "the exact same words and letters as the plain version, including every conjunction; "
+    "change nothing but the harakat. Return the corrected text in diacritized_text."
+)
+
+
+def diacritization_system(mode: str) -> str:
+    return DIACRITIZATION_FULL_SYSTEM if mode == "full" else DIACRITIZATION_PARTIAL_SYSTEM
+
 
 CATEGORIZATION_SYSTEM = (
     "You organize Arabic supplications into a taxonomy with three levels: group (broad "
     "theme), category (specific topic), and type (the kind of supplication). You are given "
-    "the supplication and the existing taxonomy. Reuse an existing name verbatim whenever "
-    "one fits the supplication. Only when nothing fits, propose a concise new Arabic name "
-    "(two or three words). Always return an Arabic name for group_name, category_name, and "
-    "type_name."
+    "the supplication and the existing taxonomy. Always return a non-empty Arabic name for "
+    "group_name, category_name, and type_name. Reuse an existing group, category, or type "
+    "name verbatim whenever one fits. Only when nothing fits, propose a concise new Arabic "
+    "name (two or three words) for the category and its group. For type_name return the "
+    "kind of supplication when you are confident; when you are unsure, return the existing "
+    "type مخصص."
 )
 
 
@@ -62,6 +85,10 @@ def dedup_user(text: str, candidates: list[str]) -> str:
 
 def diacritization_user(text: str) -> str:
     return f"الدعاء:\n{text}"
+
+
+def diacritization_verify_user(corrected: str, diacritized: str) -> str:
+    return f"النص الصحيح:\n{corrected}\n\nالنص المشكّل:\n{diacritized}"
 
 
 def categorization_user(

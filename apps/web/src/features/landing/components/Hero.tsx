@@ -24,7 +24,7 @@ export const Hero = () => {
   const reduceMotion = useReducedMotion();
   const { data: prayer } = useQuery(randomPrayerQueryOptions());
 
-  const prayerText = prayer?.textDiacritized ?? prayer?.text ?? dailyPrayer.text;
+  const prayerText = prayer?.text ?? dailyPrayer.text;
   const prayerLabel = prayer?.category?.name ?? dailyPrayer.attribution;
 
   return (

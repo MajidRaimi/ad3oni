@@ -9,7 +9,7 @@ import { PrayerCard } from "./PrayerCard";
 
 const toCard = (prayer: Prayer): CommunityPrayer => ({
   id: prayer.id,
-  text: prayer.textDiacritized ?? prayer.text,
+  text: prayer.text,
   category: prayer.category?.name ?? "",
 });
 

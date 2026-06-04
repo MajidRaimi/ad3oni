@@ -17,8 +17,7 @@ CATEGORY: dict[str, Any] = {
 PRAYER_TYPE: dict[str, Any] = {"id": "t1", "name": "نبوي", "slug": "prophetic"}
 PRAYER: dict[str, Any] = {
     "id": "p1",
-    "text": "اللهم اغفر لي وارحمني",
-    "text_diacritized": "اللَّهُمَّ اغْفِرْ لِي وَارْحَمْنِي",
+    "text": "اللَّهُمَّ اغْفِرْ لِي وَارْحَمْنِي",
     "status": "confirmed",
     "created": "2026-05-30 00:00:00.000Z",
     "updated": "2026-05-30 00:00:00.000Z",

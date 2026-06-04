@@ -7,8 +7,6 @@ from src.shared.arabic.normalize import normalize_arabic
 from src.shared.config.settings import get_settings
 
 _PRAYER_TEXT_FIELDS = [
-    "text_original",
-    "text_diacritized",
     "normalized",
     "text_hash",
     "rejection_reason",
@@ -67,15 +65,6 @@ async def _migrate_prayers(http: httpx.AsyncClient, base: str, headers: dict[str
 
     if "processed_at" not in names:
         fields.append({"name": "processed_at", "type": "date", "required": False, "hidden": False})
-    if "diacritization_confidence" not in names:
-        fields.append(
-            {
-                "name": "diacritization_confidence",
-                "type": "number",
-                "required": False,
-                "hidden": False,
-            }
-        )
     if "duplicate_of" not in names:
         fields.append(
             {

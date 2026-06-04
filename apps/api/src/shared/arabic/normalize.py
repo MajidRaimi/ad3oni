@@ -39,3 +39,7 @@ def normalize_arabic(text: str) -> str:
     folded = fold_letters(stripped)
     letters_only = _NON_ARABIC.sub(" ", folded)
     return _WHITESPACE.sub(" ", letters_only).strip()
+
+
+def harakat_preserves_wording(source: str, diacritized: str) -> bool:
+    return normalize_arabic(source) == normalize_arabic(diacritized)

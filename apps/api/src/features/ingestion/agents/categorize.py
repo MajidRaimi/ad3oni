@@ -11,7 +11,7 @@ from src.shared.queue.context import WorkerContext
 _TAXONOMY_PAGE_SIZE = 200
 _FALLBACK_GROUP = "أدعية عامة"
 _FALLBACK_CATEGORY = "أدعية متنوعة"
-_FALLBACK_TYPE = "دعاء"
+_FALLBACK_TYPE = "مخصص"
 
 
 async def _names(context: WorkerContext, collection: str) -> list[str]:

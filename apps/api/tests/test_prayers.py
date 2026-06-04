@@ -9,7 +9,7 @@ def test_list_prayers_returns_paginated_envelope(client: TestClient) -> None:
     assert body["perPage"] == 20
     prayer = body["items"][0]
     assert prayer["status"] == "confirmed"
-    assert prayer["textDiacritized"] == "اللَّهُمَّ اغْفِرْ لِي وَارْحَمْنِي"
+    assert prayer["text"] == "اللَّهُمَّ اغْفِرْ لِي وَارْحَمْنِي"
     assert prayer["category"]["group"]["slug"] == "emotion"
     assert prayer["type"]["slug"] == "prophetic"
 
@@ -33,7 +33,7 @@ def test_random_prayer(client: TestClient) -> None:
 def test_get_prayer_by_id(client: TestClient) -> None:
     response = client.get("/v1/prayers/p1")
     assert response.status_code == 200
-    assert response.json()["text"] == "اللهم اغفر لي وارحمني"
+    assert response.json()["text"] == "اللَّهُمَّ اغْفِرْ لِي وَارْحَمْنِي"
 
 
 def test_submit_prayer_creates_pending(client: TestClient) -> None:
@@ -47,7 +47,8 @@ def test_submit_prayer_creates_pending(client: TestClient) -> None:
     submitted = client.fake.created[0]  # type: ignore[attr-defined]
     assert submitted["status"] == "pending"
     assert submitted["category"] == "c1"
-    assert submitted["text_original"] == "اللهم ارزقني الصبر"
+    assert submitted["text"] == "اللهم ارزقني الصبر"
+    assert "text_original" not in submitted
     jobs = client.queue.jobs  # type: ignore[attr-defined]
     assert jobs == [("process_prayer", ("new1",))]
 
