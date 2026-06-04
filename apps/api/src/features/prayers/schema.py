@@ -18,6 +18,7 @@ TaxonomySlug = Annotated[
 class Prayer(CamelModel):
     id: str
     text: str
+    text_diacritized: str | None = None
     status: str
     category: Category | None = None
     type: PrayerType | None = None

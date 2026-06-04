@@ -9,6 +9,7 @@ def test_list_prayers_returns_paginated_envelope(client: TestClient) -> None:
     assert body["perPage"] == 20
     prayer = body["items"][0]
     assert prayer["status"] == "confirmed"
+    assert prayer["textDiacritized"] == "اللَّهُمَّ اغْفِرْ لِي وَارْحَمْنِي"
     assert prayer["category"]["group"]["slug"] == "emotion"
     assert prayer["type"]["slug"] == "prophetic"
 

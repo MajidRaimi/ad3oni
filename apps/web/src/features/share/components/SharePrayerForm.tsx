@@ -4,8 +4,11 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, useWatch } from "react-hook-form";
 import { cn } from "@/shared/lib/utils";
 import { toArabicIndex } from "@/shared/lib/arabic";
+import { toApiError } from "@/shared/api/errors";
 import { Button } from "@/shared/ui/button";
 import { MAX_LENGTH, sharePrayerSchema, type SharePrayerValues } from "../schema";
+import { useShareModal } from "../store";
+import { useSubmitPrayer } from "../useSubmitPrayer";
 
 export const SharePrayerForm = () => {
   const {
@@ -25,7 +28,23 @@ export const SharePrayerForm = () => {
   const warning = ratio >= 0.8 && ratio < 1;
   const full = ratio >= 1;
 
-  const onSubmit = handleSubmit(() => undefined);
+  const mutation = useSubmitPrayer();
+  const showSuccess = useShareModal((state) => state.showSuccess);
+
+  const onSubmit = handleSubmit((values) =>
+    mutation.mutate(
+      { text: values.text },
+      { onSuccess: () => showSuccess() },
+    ),
+  );
+
+  const submitError = mutation.isError ? toApiError(mutation.error) : null;
+  const submitMessage =
+    submitError?.code === "rate_limited"
+      ? "لقد أرسلت عدة أدعية. انتظر قليلًا ثم حاول مرة أخرى."
+      : submitError
+        ? "تعذّر إرسال دعائك. حاول مرة أخرى."
+        : null;
 
   return (
     <form onSubmit={onSubmit} className="flex flex-col gap-5">
@@ -75,13 +94,15 @@ export const SharePrayerForm = () => {
 
         {errors.text ? (
           <p className="text-xs text-red-600">{errors.text.message}</p>
+        ) : submitMessage ? (
+          <p className="text-xs text-red-600">{submitMessage}</p>
         ) : (
           <p className="text-xs text-neutral/55">يظهر دعاؤك للجميع بعد المراجعة.</p>
         )}
       </div>
 
-      <Button type="submit" size="lg" disabled={!isValid}>
-        أرسل دعاءك
+      <Button type="submit" size="lg" disabled={!isValid || mutation.isPending}>
+        {mutation.isPending ? "جارٍ الإرسال…" : "أرسل دعاءك"}
       </Button>
     </form>
   );

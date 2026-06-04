@@ -2,7 +2,9 @@
 
 import { ChevronDown } from "lucide-react";
 import { motion, useReducedMotion, type Variants } from "motion/react";
+import { useQuery } from "@tanstack/react-query";
 import { buttonVariants } from "@/shared/ui/button";
+import { randomPrayerQueryOptions } from "@/features/prayers/queries";
 import { dailyPrayer } from "../data/prayer";
 import { BracePrayer } from "./BracePrayer";
 
@@ -20,6 +22,10 @@ const item: Variants = {
 
 export const Hero = () => {
   const reduceMotion = useReducedMotion();
+  const { data: prayer } = useQuery(randomPrayerQueryOptions());
+
+  const prayerText = prayer?.textDiacritized ?? prayer?.text ?? dailyPrayer.text;
+  const prayerLabel = prayer?.category?.name ?? dailyPrayer.attribution;
 
   return (
     <section className="dotted-bg relative flex min-h-svh items-center overflow-hidden text-paper">
@@ -43,13 +49,13 @@ export const Hero = () => {
         <motion.div variants={item}>
           <BracePrayer>
             <p className="font-display text-4xl text-paper sm:text-5xl md:text-6xl">
-              {dailyPrayer.text}
+              {prayerText}
             </p>
           </BracePrayer>
         </motion.div>
 
         <motion.p variants={item} className="text-sm text-paper/55">
-          <bdi>{dailyPrayer.attribution}</bdi>
+          <bdi>{prayerLabel}</bdi>
         </motion.p>
 
         <motion.div
