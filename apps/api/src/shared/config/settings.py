@@ -53,6 +53,12 @@ class Settings(BaseSettings):
 
     submit_rate_limit: str = "5/minute"
 
+    discord_public_key: str = ""
+    discord_app_id: str = ""
+    discord_bot_token: str = ""
+    discord_guild_id: str = ""
+    discord_schedule_limit: int = 15
+
     @property
     def is_production(self) -> bool:
         return self.environment == "prod"

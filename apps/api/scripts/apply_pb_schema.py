@@ -17,8 +17,27 @@ _PRAYER_STATUS_VALUES = ["processing", "rejected", "duplicate", "failed"]
 _TAXONOMY_COLLECTIONS = ["categories", "types", "groups"]
 
 
-def _text_field(name: str) -> dict[str, Any]:
-    return {"name": name, "type": "text", "required": False, "hidden": False}
+def _text_field(name: str, *, required: bool = False) -> dict[str, Any]:
+    return {"name": name, "type": "text", "required": required, "hidden": False}
+
+
+def _bool_field(name: str) -> dict[str, Any]:
+    return {"name": name, "type": "bool", "required": False, "hidden": False}
+
+
+def _schedule_fields() -> list[dict[str, Any]]:
+    return [
+        _text_field("guild_id", required=True),
+        _text_field("channel_id", required=True),
+        _text_field("cron", required=True),
+        _text_field("timezone"),
+        _text_field("content_type", required=True),
+        _text_field("category"),
+        _text_field("label"),
+        _bool_field("enabled"),
+        _text_field("created_by"),
+        _text_field("last_run_at"),
+    ]
 
 
 async def _get_collection(
@@ -138,6 +157,46 @@ async def _migrate_taxonomy(
     print(f"migrated {collection}")
 
 
+async def _ensure_schedules(
+    http: httpx.AsyncClient, base: str, headers: dict[str, str]
+) -> None:
+    existing = await http.get(f"{base}/api/collections/schedules", headers=headers)
+    if existing.status_code == 200:
+        collection: dict[str, Any] = existing.json()
+        fields: list[dict[str, Any]] = collection["fields"]
+        names = _field_names(fields)
+        for field in _schedule_fields():
+            if field["name"] not in names:
+                fields.append(field)
+        indexes: list[str] = collection.get("indexes", [])
+        _ensure_index(indexes, "idx_schedules_enabled", "schedules", "enabled")
+        await _patch_collection(
+            http, base, headers, collection["id"], {"fields": fields, "indexes": indexes}
+        )
+        print("migrated schedules")
+        return
+
+    template = await _get_collection(http, base, headers, "prayers")
+    system_fields = [
+        field
+        for field in template["fields"]
+        if field.get("system") or field["type"] == "autodate"
+    ]
+    payload = {
+        "name": "schedules",
+        "type": "base",
+        "fields": system_fields + _schedule_fields(),
+        "indexes": [
+            "CREATE INDEX `idx_schedules_enabled` ON `schedules` (`enabled`)"
+        ],
+    }
+    created = await http.post(
+        f"{base}/api/collections", headers=headers, json=payload
+    )
+    created.raise_for_status()
+    print("created schedules")
+
+
 async def _authenticate(
     http: httpx.AsyncClient, base: str, email: str, password: str
 ) -> dict[str, str]:
@@ -159,6 +218,7 @@ async def main() -> None:
         await _migrate_prayers(http, base, headers)
         for collection in _TAXONOMY_COLLECTIONS:
             await _migrate_taxonomy(http, base, headers, collection)
+        await _ensure_schedules(http, base, headers)
 
 
 if __name__ == "__main__":

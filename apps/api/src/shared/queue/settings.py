@@ -6,6 +6,7 @@ from arq import ArqRedis, cron
 
 from src.features.daily.keys import MECCA_TIMEZONE
 from src.features.daily.selection import assign_daily_prayer
+from src.features.discord.scheduler import run_due_schedules
 from src.features.ingestion.finalize import finalize_failed
 from src.features.ingestion.pipeline import run_pipeline
 from src.shared.ai.client import create_ai_client
@@ -68,9 +69,21 @@ async def assign_daily(ctx: dict[Any, Any]) -> None:
         logger.exception("daily_prayer_assignment_failed")
 
 
+async def dispatch_schedules(ctx: dict[Any, Any]) -> None:
+    context = get_worker_context(ctx)
+    redis: ArqRedis = ctx["redis"]
+    try:
+        await run_due_schedules(context, redis)
+    except Exception:
+        logger.exception("discord_schedule_dispatch_failed")
+
+
 class WorkerSettings:
     functions = [process_prayer]
-    cron_jobs = [cron(assign_daily, hour=0, minute=0, run_at_startup=False)]
+    cron_jobs = [
+        cron(assign_daily, hour=0, minute=0, run_at_startup=False),
+        cron(dispatch_schedules, minute=set(range(60)), second=0),
+    ]
     timezone = ZoneInfo(MECCA_TIMEZONE)
     on_startup = startup
     on_shutdown = shutdown

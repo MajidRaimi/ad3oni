@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 
+import httpx
 from arq import ArqRedis
 from openai import AsyncOpenAI
 
@@ -13,3 +14,4 @@ class AppState:
     pocketbase: PocketBaseClient
     ai: AsyncOpenAI
     queue: ArqRedis
+    http: httpx.AsyncClient
