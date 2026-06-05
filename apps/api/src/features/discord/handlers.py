@@ -11,6 +11,8 @@ from src.features.daily.service import DailyService
 from src.features.discord.describe import (
     content_label_ar,
     describe_cron_ar,
+    force_rtl,
+    isolate,
     timezone_label_ar,
 )
 from src.features.discord.embeds import (
@@ -124,10 +126,13 @@ def _schedule_summary(schedule: Schedule, category_names: dict[str, str]) -> str
         schedule.category or "", schedule.category or ""
     )
     content = content_label_ar(schedule.content_type, category_display)
-    return (
-        f"- `{schedule.id}` - {content} {when} "
-        f"{timezone_label_ar(schedule.timezone)} في <#{schedule.channel_id}>"
+    channel = isolate(f"<#{schedule.channel_id}>")
+    identifier = isolate(f"`{schedule.id}`")
+    body = (
+        f"{identifier} - {content} {when} "
+        f"{timezone_label_ar(schedule.timezone)} في {channel}"
     )
+    return f"- {force_rtl(body)}"
 
 
 def _confirm_created(
@@ -260,10 +265,11 @@ async def _handle_setup_daily(
         )
     except ValidationError as error:
         return InteractionResult(_ephemeral(error.message))
+    channel = isolate(f"<#{channel_id}>")
     return InteractionResult(
         _ephemeral(
-            f"سيُنشر دعاء اليوم في <#{channel_id}> يوميًا الساعة الثامنة صباحًا (توقيت مكة).\n"
-            f"`{created.id}`"
+            f"سيُنشر دعاء اليوم في {channel} يوميًا الساعة الثامنة صباحًا "
+            f"(توقيت مكة).\n{isolate(f'`{created.id}`')}"
         )
     )
 
