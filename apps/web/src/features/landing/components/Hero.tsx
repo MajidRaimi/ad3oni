@@ -25,7 +25,8 @@ export const Hero = () => {
   const { data: prayer } = useQuery(randomPrayerQueryOptions());
 
   const prayerText = prayer?.text ?? dailyPrayer.text;
-  const prayerLabel = prayer?.category?.name ?? dailyPrayer.attribution;
+  const prayerLabel =
+    prayer?.source ?? prayer?.category?.name ?? dailyPrayer.attribution;
 
   return (
     <section className="dotted-bg relative flex min-h-svh items-center overflow-hidden text-paper">

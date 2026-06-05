@@ -19,6 +19,7 @@ class Prayer(CamelModel):
     id: str
     text: str
     status: str
+    source: str | None = None
     category: Category | None = None
     type: PrayerType | None = None
     created: str
