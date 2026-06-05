@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 
 from src.features.daily.router import router as daily_router
+from src.features.discord.router import router as discord_router
 from src.features.health.router import router as health_router
 from src.features.prayers.router import router as prayers_router
 from src.features.taxonomy.router import router as taxonomy_router
@@ -28,6 +29,7 @@ def create_app() -> FastAPI:
     app.include_router(taxonomy_router, prefix=API_PREFIX)
     app.include_router(prayers_router, prefix=API_PREFIX)
     app.include_router(daily_router, prefix=API_PREFIX)
+    app.include_router(discord_router, prefix=API_PREFIX)
 
     return app
 

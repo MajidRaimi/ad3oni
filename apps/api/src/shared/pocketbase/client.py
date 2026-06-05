@@ -75,6 +75,17 @@ class PocketBaseClient:
         )
         return data or {}
 
+    async def delete_record(self, collection: str, record_id: str) -> None:
+        path = f"/api/collections/{collection}/records/{record_id}"
+        response = await self._send("DELETE", path)
+        if response.status_code == 401 and self.has_credentials:
+            await self.authenticate()
+            response = await self._send("DELETE", path)
+        try:
+            response.raise_for_status()
+        except httpx.HTTPError as exc:
+            raise UpstreamError(f"PocketBase request failed: {exc}") from exc
+
     async def _request(
         self,
         method: str,

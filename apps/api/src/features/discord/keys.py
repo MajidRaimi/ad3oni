@@ -1,0 +1,26 @@
+DISCORD_API_BASE = "https://discord.com/api/v10"
+
+MANAGE_GUILD = 0x20
+
+PING = 1
+APPLICATION_COMMAND = 2
+MESSAGE_COMPONENT = 3
+APPLICATION_COMMAND_AUTOCOMPLETE = 4
+
+PONG = 1
+CHANNEL_MESSAGE_WITH_SOURCE = 4
+DEFERRED_CHANNEL_MESSAGE_WITH_SOURCE = 5
+UPDATE_MESSAGE = 7
+APPLICATION_COMMAND_AUTOCOMPLETE_RESULT = 8
+
+EPHEMERAL_FLAG = 1 << 6
+
+AMIN_BUTTON_PREFIX = "amin"
+
+
+def amin_count_key(message_id: str) -> str:
+    return f"ad3oni:discord:amin:{message_id}"
+
+
+def submit_cooldown_key(user_id: str) -> str:
+    return f"ad3oni:discord:cooldown:{user_id}"

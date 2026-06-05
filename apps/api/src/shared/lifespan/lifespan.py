@@ -30,7 +30,11 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         queue = await create_arq_pool(settings)
 
         app.state.app_state = AppState(
-            settings=settings, pocketbase=pocketbase, ai=ai, queue=queue
+            settings=settings,
+            pocketbase=pocketbase,
+            ai=ai,
+            queue=queue,
+            http=http,
         )
         logger.info("startup_complete environment=%s", settings.environment)
 
