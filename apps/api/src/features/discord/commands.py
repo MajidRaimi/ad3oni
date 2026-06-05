@@ -62,7 +62,6 @@ def command_definitions() -> list[dict[str, Any]]:
                 },
             ],
         },
-        {"name": "categories", "description": "Browse the du'a categories"},
         {
             "name": "submit",
             "description": "Submit a new du'a for review",

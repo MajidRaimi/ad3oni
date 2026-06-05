@@ -1,7 +1,6 @@
 from typing import Any
 
 from src.features.prayers.schema import Prayer
-from src.features.taxonomy.schema import Category
 
 BRAND_COLOR = 0x6D5ACD
 SITE_URL = "https://ad3oni.com"
@@ -55,7 +54,6 @@ def help_embed() -> dict[str, Any]:
             "• `/daily` — دعاء اليوم\n"
             "• `/random` — دعاء عشوائي (يمكن تحديد التصنيف)\n"
             "• `/search` — البحث في الأدعية\n"
-            "• `/categories` — تصفّح التصنيفات\n"
             "• `/submit` — إرسال دعاء جديد للمراجعة\n"
             "• `/setup-daily` — نشر دعاء اليوم تلقائيًا في قناة\n"
             "• `/schedule` — جدولة نشر الأدعية بوقت محدد أو بصيغة cron"
@@ -67,19 +65,3 @@ def help_embed() -> dict[str, Any]:
 
 def info_embed(message: str) -> dict[str, Any]:
     return {"description": message, "color": BRAND_COLOR}
-
-
-def categories_embed(categories: list[Category]) -> dict[str, Any]:
-    groups: dict[str, list[str]] = {}
-    for category in categories:
-        group_name = category.group.name if category.group else "أخرى"
-        groups.setdefault(group_name, []).append(category.name)
-    sections = [
-        f"**{group_name}**\n{'، '.join(names)}"
-        for group_name, names in groups.items()
-    ]
-    return {
-        "title": "التصنيفات",
-        "description": "\n\n".join(sections),
-        "color": BRAND_COLOR,
-    }
