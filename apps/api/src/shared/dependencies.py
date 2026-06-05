@@ -16,5 +16,10 @@ def get_queue(request: Request) -> ArqRedis:
     return queue
 
 
+def get_redis(request: Request) -> ArqRedis:
+    return get_queue(request)
+
+
 PocketBaseDep = Annotated[PocketBaseClient, Depends(get_pocketbase)]
 QueueDep = Annotated[ArqRedis, Depends(get_queue)]
+RedisDep = Annotated[ArqRedis, Depends(get_redis)]
