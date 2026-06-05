@@ -8,6 +8,11 @@ from croniter import croniter
 from openai import AsyncOpenAI
 
 from src.features.daily.service import DailyService
+from src.features.discord.describe import (
+    content_label_ar,
+    describe_cron_ar,
+    timezone_label_ar,
+)
 from src.features.discord.embeds import (
     help_embed,
     info_embed,
@@ -104,20 +109,34 @@ def _focused_option(data: dict[str, Any]) -> dict[str, Any] | None:
     return walk(data.get("options", []))
 
 
-def _schedule_summary(schedule: Schedule) -> str:
-    target = (
-        f"category: {schedule.category}"
-        if schedule.content_type == "category" and schedule.category
-        else schedule.content_type
+async def _category_names(
+    deps: DiscordDeps, schedules: list[Schedule]
+) -> dict[str, str]:
+    if not any(s.content_type == "category" and s.category for s in schedules):
+        return {}
+    categories = await TaxonomyService(deps.pocketbase).list_categories()
+    return {category.slug: category.name for category in categories}
+
+
+def _schedule_summary(schedule: Schedule, category_names: dict[str, str]) -> str:
+    when = describe_cron_ar(schedule.cron) or f"وفق الجدولة `{schedule.cron}`"
+    category_display = category_names.get(
+        schedule.category or "", schedule.category or ""
     )
+    content = content_label_ar(schedule.content_type, category_display)
     return (
-        f"• `{schedule.id}` — `{schedule.cron}` ({schedule.timezone}) → "
-        f"{target} in <#{schedule.channel_id}>"
+        f"• **{content}** — {when} {timezone_label_ar(schedule.timezone)} — "
+        f"في <#{schedule.channel_id}>\n"
+        f"المعرّف: `{schedule.id}` · `{schedule.cron}`"
     )
 
 
-def _confirm_created(schedules: list[Schedule]) -> str:
-    lines = "\n".join(_schedule_summary(schedule) for schedule in schedules)
+def _confirm_created(
+    schedules: list[Schedule], category_names: dict[str, str]
+) -> str:
+    lines = "\n\n".join(
+        _schedule_summary(schedule, category_names) for schedule in schedules
+    )
     return f"تمت إضافة الجدولة:\n{lines}"
 
 
@@ -301,7 +320,8 @@ async def _handle_schedule_add(
             )
         except ValidationError as error:
             return InteractionResult(_ephemeral(error.message))
-        return InteractionResult(_ephemeral(_confirm_created([created])))
+        names = await _category_names(deps, [created])
+        return InteractionResult(_ephemeral(_confirm_created([created], names)))
 
     if when:
         return InteractionResult(
@@ -356,7 +376,10 @@ def _schedule_add_background(
         except ValidationError as error:
             await rest.edit_original(app_id, token, info_embed(error.message))
             return
-        await rest.edit_original(app_id, token, info_embed(_confirm_created(created)))
+        names = await _category_names(deps, created)
+        await rest.edit_original(
+            app_id, token, info_embed(_confirm_created(created, names))
+        )
 
     return run
 
@@ -369,7 +392,10 @@ async def _handle_schedule_list(
     schedules = await service.list_for_guild(guild_id)
     if not schedules:
         return InteractionResult(_ephemeral("لا توجد جدولات في هذا الخادم."))
-    body = "\n".join(_schedule_summary(schedule) for schedule in schedules)
+    names = await _category_names(deps, schedules)
+    body = "\n\n".join(
+        _schedule_summary(schedule, names) for schedule in schedules
+    )
     return InteractionResult(_message([info_embed(body)], ephemeral=True))
 
 
