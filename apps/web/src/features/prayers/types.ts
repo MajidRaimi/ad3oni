@@ -21,6 +21,7 @@ export type Prayer = {
   id: string;
   text: string;
   status: string;
+  source?: string | null;
   category?: Category | null;
   type?: PrayerType | null;
   created: string;

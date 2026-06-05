@@ -11,6 +11,7 @@ const toCard = (prayer: Prayer): CommunityPrayer => ({
   id: prayer.id,
   text: prayer.text,
   category: prayer.category?.name ?? "",
+  source: prayer.source ?? undefined,
 });
 
 const MarqueeRow = ({

@@ -12,6 +12,7 @@ def to_prayer(record: dict[str, Any]) -> Prayer:
         id=record["id"],
         text=record["text"],
         status=record["status"],
+        source=record.get("source"),
         category=to_category(category_record) if category_record else None,
         type=to_prayer_type(type_record) if type_record else None,
         created=record["created"],

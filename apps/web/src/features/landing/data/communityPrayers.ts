@@ -2,6 +2,7 @@ export type CommunityPrayer = {
   id: string;
   text: string;
   category: string;
+  source?: string;
 };
 
 export const communityPrayers: CommunityPrayer[] = [

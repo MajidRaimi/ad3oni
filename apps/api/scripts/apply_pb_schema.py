@@ -11,6 +11,7 @@ _PRAYER_TEXT_FIELDS = [
     "text_hash",
     "rejection_reason",
     "ai_model",
+    "source",
 ]
 _PRAYER_STATUS_VALUES = ["processing", "rejected", "duplicate", "failed"]
 _TAXONOMY_COLLECTIONS = ["categories", "types", "groups"]
