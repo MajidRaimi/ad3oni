@@ -229,28 +229,30 @@ def test_bad_signature_is_rejected(keypair: SigningKey) -> None:
     assert response.status_code == 401
 
 
-def test_random_command_returns_prayer_embed(keypair: SigningKey) -> None:
+def test_random_command_returns_minimal_prayer_embed(keypair: SigningKey) -> None:
     public_key = keypair.verify_key.encode().hex()
     client = _client(public_key, FakePocketBase(), FakeRedis())
     response = _post(client, keypair, _command("random"))
     body = response.json()
     assert body["type"] == 4
-    assert body["data"]["embeds"][0]["description"] == PRAYER["text"]
-    assert body["data"]["components"][0]["components"][0]["custom_id"] == "amin"
+    embed = body["data"]["embeds"][0]
+    assert embed["description"] == f"**﴿ {PRAYER['text']} ﴾**"
+    assert "title" not in embed
+    assert "footer" not in embed
+    assert "components" not in body["data"]
 
 
-def test_amin_button_increments(keypair: SigningKey) -> None:
+def test_component_interaction_is_acknowledged(keypair: SigningKey) -> None:
     public_key = keypair.verify_key.encode().hex()
     client = _client(public_key, FakePocketBase(), FakeRedis())
     payload = {
         "type": 3,
         "token": "t",
         "data": {"custom_id": "amin"},
-        "message": {"id": "m1", "embeds": [{"description": "x"}]},
+        "message": {"id": "m1"},
     }
     body = _post(client, keypair, payload).json()
-    assert body["type"] == 7
-    assert "· 1" in body["data"]["components"][0]["components"][0]["label"]
+    assert body["type"] == 6
 
 
 def test_autocomplete_returns_categories(keypair: SigningKey) -> None:

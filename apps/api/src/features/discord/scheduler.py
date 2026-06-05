@@ -5,7 +5,7 @@ from arq import ArqRedis
 from croniter import croniter
 
 from src.features.daily.service import DailyService
-from src.features.discord.embeds import amin_components, prayer_embed
+from src.features.discord.embeds import prayer_embed
 from src.features.discord.rest import DiscordRest
 from src.features.discord.schema import Schedule
 from src.features.discord.service import DiscordScheduleService
@@ -70,7 +70,7 @@ async def run_due_schedules(context: WorkerContext, redis: ArqRedis) -> None:
             continue
 
         response = await rest.post_message(
-            schedule.channel_id, prayer_embed(prayer), amin_components(0)
+            schedule.channel_id, prayer_embed(prayer)
         )
         if response.status_code in (403, 404):
             await service.disable(schedule.id)
