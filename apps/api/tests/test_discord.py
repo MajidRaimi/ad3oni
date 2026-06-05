@@ -9,6 +9,11 @@ from fastapi.testclient import TestClient
 from nacl.signing import SigningKey
 from openai import AsyncOpenAI
 from src.features.discord import parse as parse_module
+from src.features.discord.describe import (
+    content_label_ar,
+    describe_cron_ar,
+    timezone_label_ar,
+)
 from src.features.discord.parse import NLSchedule, parse_schedule
 from src.features.discord.scheduler import _is_due, run_due_schedules
 from src.features.discord.schema import Schedule
@@ -240,6 +245,23 @@ def test_random_command_returns_minimal_prayer_embed(keypair: SigningKey) -> Non
     assert "title" not in embed
     assert "footer" not in embed
     assert "components" not in body["data"]
+
+
+def test_describe_cron_ar() -> None:
+    assert describe_cron_ar("0 8 * * *") == "كل يوم الساعة ٨ صباحًا"
+    assert describe_cron_ar("18 19 * * *") == "كل يوم الساعة ٧:١٨ مساءً"
+    assert describe_cron_ar("0 12 * * *") == "كل يوم ظهرًا"
+    assert describe_cron_ar("0 0 * * *") == "كل يوم منتصف الليل"
+    assert describe_cron_ar("30 6 * * 5") == "كل جمعة الساعة ٦:٣٠ صباحًا"
+    assert describe_cron_ar("*/15 * * * *") is None
+
+
+def test_timezone_and_content_labels() -> None:
+    assert timezone_label_ar("Asia/Riyadh") == "بتوقيت مكة"
+    assert timezone_label_ar("Africa/Cairo") == "بتوقيت القاهرة"
+    assert content_label_ar("daily", None) == "دعاء اليوم"
+    assert content_label_ar("random", None) == "دعاء عشوائي"
+    assert content_label_ar("category", "الرزق") == "دعاء من تصنيف الرزق"
 
 
 def test_component_interaction_is_acknowledged(keypair: SigningKey) -> None:
