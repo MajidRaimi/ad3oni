@@ -10,7 +10,6 @@ from openai import AsyncOpenAI
 from src.features.daily.service import DailyService
 from src.features.discord.embeds import (
     amin_components,
-    categories_embed,
     help_embed,
     info_embed,
     prayer_embed,
@@ -40,7 +39,7 @@ from src.shared.config.settings import Settings
 from src.shared.errors.exceptions import NotFoundError, ValidationError
 from src.shared.pocketbase.client import PocketBaseClient
 
-_DAILY_CRON = "1 0 * * *"
+_DAILY_CRON = "0 8 * * *"
 _SUBMIT_COOLDOWN_SECONDS = 30
 _SEARCH_LIMIT = 3
 
@@ -155,8 +154,6 @@ async def _handle_command(
         return await _handle_random(deps, options)
     if name == "search":
         return await _handle_search(deps, options)
-    if name == "categories":
-        return await _handle_categories(deps)
     if name == "submit":
         return await _handle_submit(payload, deps, options)
     if name == "help":
@@ -209,12 +206,6 @@ async def _handle_search(
     return InteractionResult(_message(embeds))
 
 
-async def _handle_categories(deps: DiscordDeps) -> InteractionResult:
-    service = TaxonomyService(deps.pocketbase)
-    categories = await service.list_categories()
-    return InteractionResult(_message([categories_embed(categories)], ephemeral=True))
-
-
 async def _handle_submit(
     payload: dict[str, Any], deps: DiscordDeps, options: dict[str, Any]
 ) -> InteractionResult:
@@ -264,7 +255,7 @@ async def _handle_setup_daily(
         return InteractionResult(_ephemeral(error.message))
     return InteractionResult(
         _ephemeral(
-            f"سيُنشر دعاء اليوم في <#{channel_id}> يوميًا الساعة 12:01 منتصف الليل (توقيت مكة).\n"
+            f"سيُنشر دعاء اليوم في <#{channel_id}> يوميًا الساعة الثامنة صباحًا (توقيت مكة).\n"
             f"`{created.id}`"
         )
     )
