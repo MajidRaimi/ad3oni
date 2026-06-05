@@ -1,7 +1,11 @@
 from typing import Any
+from zoneinfo import ZoneInfo
 
 import httpx
+from arq import ArqRedis, cron
 
+from src.features.daily.keys import MECCA_TIMEZONE
+from src.features.daily.selection import assign_daily_prayer
 from src.features.ingestion.finalize import finalize_failed
 from src.features.ingestion.pipeline import run_pipeline
 from src.shared.ai.client import create_ai_client
@@ -54,8 +58,20 @@ async def process_prayer(ctx: dict[Any, Any], prayer_id: str) -> None:
         raise
 
 
+async def assign_daily(ctx: dict[Any, Any]) -> None:
+    context = get_worker_context(ctx)
+    redis: ArqRedis = ctx["redis"]
+    try:
+        prayer_id = await assign_daily_prayer(context.pocketbase, redis)
+        logger.info("daily_prayer_assigned id=%s", prayer_id)
+    except Exception:
+        logger.exception("daily_prayer_assignment_failed")
+
+
 class WorkerSettings:
     functions = [process_prayer]
+    cron_jobs = [cron(assign_daily, hour=0, minute=0, run_at_startup=False)]
+    timezone = ZoneInfo(MECCA_TIMEZONE)
     on_startup = startup
     on_shutdown = shutdown
     redis_settings = redis_settings_from(_settings)
