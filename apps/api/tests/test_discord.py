@@ -362,6 +362,56 @@ def test_schedule_add_with_invalid_cron_is_rejected(keypair: SigningKey) -> None
     assert "cron" in body["data"]["embeds"][0]["description"]
 
 
+def _seed_schedule(pocketbase: FakePocketBase) -> None:
+    pocketbase.schedules.append(
+        {
+            "id": "sch1",
+            "guild_id": "guild1",
+            "channel_id": "c1",
+            "cron": "0 8 * * *",
+            "timezone": "Asia/Riyadh",
+            "content_type": "daily",
+            "category": "",
+            "label": "",
+            "enabled": True,
+            "last_run_at": "",
+        }
+    )
+
+
+def test_schedule_remove_shows_select(keypair: SigningKey) -> None:
+    public_key = keypair.verify_key.encode().hex()
+    pocketbase = FakePocketBase()
+    _seed_schedule(pocketbase)
+    client = _client(public_key, pocketbase, FakeRedis())
+    options = [{"name": "remove"}]
+    body = _post(
+        client, keypair, _command("schedule", options, permissions="32")
+    ).json()
+    assert body["type"] == 4
+    select = body["data"]["components"][0]["components"][0]
+    assert select["type"] == 3
+    assert select["custom_id"] == "schedule_remove"
+    assert select["options"][0]["value"] == "sch1"
+
+
+def test_schedule_remove_select_deletes(keypair: SigningKey) -> None:
+    public_key = keypair.verify_key.encode().hex()
+    pocketbase = FakePocketBase()
+    _seed_schedule(pocketbase)
+    client = _client(public_key, pocketbase, FakeRedis())
+    payload = {
+        "type": 3,
+        "token": "t",
+        "guild_id": "guild1",
+        "member": {"permissions": "32", "user": {"id": "u"}},
+        "data": {"custom_id": "schedule_remove", "values": ["sch1"]},
+    }
+    body = _post(client, keypair, payload).json()
+    assert body["type"] == 7
+    assert "sch1" in pocketbase.deleted
+
+
 @pytest.mark.asyncio
 async def test_parse_schedule_filters_invalid_cron(monkeypatch: Any) -> None:
     async def fake_complete_json(*args: Any, **kwargs: Any) -> NLSchedule:

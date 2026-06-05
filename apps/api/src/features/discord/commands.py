@@ -145,16 +145,8 @@ def command_definitions() -> list[dict[str, Any]]:
                 },
                 {
                     "name": "remove",
-                    "description": "Remove a schedule by id",
+                    "description": "Pick a schedule to remove",
                     "type": _SUB_COMMAND,
-                    "options": [
-                        {
-                            "name": "id",
-                            "description": "The schedule id (from /schedule list)",
-                            "type": _STRING,
-                            "required": True,
-                        }
-                    ],
                 },
             ],
         },

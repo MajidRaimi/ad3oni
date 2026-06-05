@@ -21,6 +21,7 @@ from src.features.discord.embeds import (
     prayer_embed,
 )
 from src.features.discord.keys import (
+    ACTION_ROW,
     APPLICATION_COMMAND,
     APPLICATION_COMMAND_AUTOCOMPLETE,
     APPLICATION_COMMAND_AUTOCOMPLETE_RESULT,
@@ -31,6 +32,9 @@ from src.features.discord.keys import (
     MANAGE_GUILD,
     MESSAGE_COMPONENT,
     PONG,
+    SCHEDULE_REMOVE_SELECT,
+    STRING_SELECT,
+    UPDATE_MESSAGE,
     submit_cooldown_key,
 )
 from src.features.discord.parse import DEFAULT_TIMEZONE, parse_schedule
@@ -285,7 +289,7 @@ async def _handle_schedule(
     if sub_name == "list":
         return await _handle_schedule_list(payload, deps)
     if sub_name == "remove":
-        return await _handle_schedule_remove(payload, deps, options)
+        return await _handle_schedule_remove(payload, deps)
     return InteractionResult(_ephemeral("أمر غير معروف."))
 
 
@@ -400,22 +404,80 @@ async def _handle_schedule_list(
     return InteractionResult(_message([info_embed(body)], ephemeral=True))
 
 
+def _remove_option(
+    schedule: Schedule, category_names: dict[str, str]
+) -> dict[str, Any]:
+    category_display = category_names.get(
+        schedule.category or "", schedule.category or ""
+    )
+    content = content_label_ar(schedule.content_type, category_display)
+    when = describe_cron_ar(schedule.cron) or schedule.cron
+    return {
+        "label": f"{content} · {when}"[:100],
+        "description": timezone_label_ar(schedule.timezone)[:100],
+        "value": schedule.id,
+    }
+
+
 async def _handle_schedule_remove(
-    payload: dict[str, Any], deps: DiscordDeps, options: dict[str, Any]
+    payload: dict[str, Any], deps: DiscordDeps
 ) -> InteractionResult:
     guild_id = str(payload.get("guild_id", ""))
-    schedule_id = str(options.get("id", ""))
     service = DiscordScheduleService(deps.pocketbase)
-    removed = await service.remove(guild_id, schedule_id)
-    if not removed:
-        return InteractionResult(_ephemeral("لم أجد جدولة بهذا المعرّف."))
-    return InteractionResult(_ephemeral("تم حذف الجدولة."))
+    schedules = await service.list_for_guild(guild_id)
+    if not schedules:
+        return InteractionResult(_ephemeral("لا توجد جدولات في هذا الخادم."))
+    names = await _category_names(deps, schedules)
+    select = {
+        "type": ACTION_ROW,
+        "components": [
+            {
+                "type": STRING_SELECT,
+                "custom_id": SCHEDULE_REMOVE_SELECT,
+                "placeholder": "اختر الجدولة التي تريد حذفها",
+                "options": [_remove_option(s, names) for s in schedules[:25]],
+            }
+        ],
+    }
+    return InteractionResult(
+        {
+            "type": CHANNEL_MESSAGE_WITH_SOURCE,
+            "data": {
+                "content": "اختر الجدولة التي تريد حذفها:",
+                "components": [select],
+                "flags": EPHEMERAL_FLAG,
+            },
+        }
+    )
 
 
 async def _handle_component(
     payload: dict[str, Any], deps: DiscordDeps
 ) -> InteractionResult:
+    if payload["data"].get("custom_id") == SCHEDULE_REMOVE_SELECT:
+        return await _handle_remove_select(payload, deps)
     return InteractionResult({"type": DEFERRED_UPDATE_MESSAGE})
+
+
+async def _handle_remove_select(
+    payload: dict[str, Any], deps: DiscordDeps
+) -> InteractionResult:
+    if not _has_manage_guild(payload):
+        return InteractionResult(
+            {
+                "type": UPDATE_MESSAGE,
+                "data": {"content": "تحتاج صلاحية إدارة الخادم.", "components": []},
+            }
+        )
+    guild_id = str(payload.get("guild_id", ""))
+    values = payload["data"].get("values", [])
+    schedule_id = str(values[0]) if values else ""
+    service = DiscordScheduleService(deps.pocketbase)
+    removed = await service.remove(guild_id, schedule_id)
+    text = "تم حذف الجدولة." if removed else "لم أجد الجدولة."
+    return InteractionResult(
+        {"type": UPDATE_MESSAGE, "data": {"content": text, "components": []}}
+    )
 
 
 async def _handle_autocomplete(
