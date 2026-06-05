@@ -256,6 +256,25 @@ def test_describe_cron_ar() -> None:
     assert describe_cron_ar("*/15 * * * *") is None
 
 
+def test_schedule_summary_isolates_bidi() -> None:
+    from src.features.discord import handlers
+    from src.features.discord.schema import Schedule
+
+    schedule = Schedule(
+        id="abc123",
+        guild_id="g",
+        channel_id="555",
+        cron="0 8 * * *",
+        timezone="Asia/Riyadh",
+        content_type="daily",
+    )
+    rlm, fsi, pdi = chr(0x200F), chr(0x2068), chr(0x2069)
+    summary = handlers._schedule_summary(schedule, {})
+    assert summary.startswith(f"- {rlm}")
+    assert f"{fsi}<#555>{pdi}" in summary
+    assert f"{fsi}`abc123`{pdi}" in summary
+
+
 def test_timezone_and_content_labels() -> None:
     assert timezone_label_ar("Asia/Riyadh") == "بتوقيت مكة"
     assert timezone_label_ar("Africa/Cairo") == "بتوقيت القاهرة"
