@@ -113,7 +113,7 @@ The API also exposes interactive docs at http://localhost:8000/docs.
 
 - 🐦 [Twitter Account](https://twitter.com/ad3oni_) for daily prayer reminders and updates.
 - 🌐 [Ad3oni Website](https://www.ad3oni.com) for prayer times and personalized reminders.
-- 🤖 [Invite the Ad3oni Discord Bot](https://discord.com/api/oauth2/authorize?client_id=1159198588782518292&permissions=26624&scope=bot%20applications.commands) to your server.
+- 🤖 [Invite the Ad3oni Discord Bot](https://discord.com/oauth2/authorize?client_id=1159198588782518292&permissions=84992&scope=bot+applications.commands) to your server.
 - 📱 iOS and Android applications are coming soon.
 
 ---
