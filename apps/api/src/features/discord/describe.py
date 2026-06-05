@@ -1,4 +1,4 @@
-_RLM = chr(0x200F)
+_RLI = chr(0x2067)
 _FSI = chr(0x2068)
 _PDI = chr(0x2069)
 
@@ -9,8 +9,8 @@ def isolate(text: str) -> str:
     return f"{_FSI}{text}{_PDI}"
 
 
-def force_rtl(text: str) -> str:
-    return f"{_RLM}{text}"
+def rtl_block(text: str) -> str:
+    return f"{_RLI}{text}{_PDI}"
 
 _WEEKDAYS = {
     0: "الأحد",

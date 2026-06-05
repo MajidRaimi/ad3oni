@@ -11,8 +11,8 @@ from src.features.daily.service import DailyService
 from src.features.discord.describe import (
     content_label_ar,
     describe_cron_ar,
-    force_rtl,
     isolate,
+    rtl_block,
     timezone_label_ar,
 )
 from src.features.discord.embeds import (
@@ -127,12 +127,10 @@ def _schedule_summary(schedule: Schedule, category_names: dict[str, str]) -> str
     )
     content = content_label_ar(schedule.content_type, category_display)
     channel = isolate(f"<#{schedule.channel_id}>")
-    identifier = isolate(f"`{schedule.id}`")
-    body = (
-        f"{identifier} - {content} {when} "
-        f"{timezone_label_ar(schedule.timezone)} في {channel}"
+    message = rtl_block(
+        f"{content} {when} {timezone_label_ar(schedule.timezone)} في {channel}"
     )
-    return f"- {force_rtl(body)}"
+    return f"- `{schedule.id}` - {message}"
 
 
 def _confirm_created(

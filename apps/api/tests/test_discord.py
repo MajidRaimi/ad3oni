@@ -268,11 +268,11 @@ def test_schedule_summary_isolates_bidi() -> None:
         timezone="Asia/Riyadh",
         content_type="daily",
     )
-    rlm, fsi, pdi = chr(0x200F), chr(0x2068), chr(0x2069)
+    rli, fsi, pdi = chr(0x2067), chr(0x2068), chr(0x2069)
     summary = handlers._schedule_summary(schedule, {})
-    assert summary.startswith(f"- {rlm}")
+    assert summary.startswith(f"- `abc123` - {rli}")
     assert f"{fsi}<#555>{pdi}" in summary
-    assert f"{fsi}`abc123`{pdi}" in summary
+    assert summary.endswith(pdi)
 
 
 def test_timezone_and_content_labels() -> None:
