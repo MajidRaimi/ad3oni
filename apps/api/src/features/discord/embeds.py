@@ -7,43 +7,7 @@ SITE_URL = "https://ad3oni.com"
 
 
 def prayer_embed(prayer: Prayer) -> dict[str, Any]:
-    footer_parts = [
-        part
-        for part in (
-            prayer.source,
-            prayer.category.name if prayer.category else None,
-            prayer.type.name if prayer.type else None,
-        )
-        if part
-    ]
-    embed: dict[str, Any] = {
-        "description": prayer.text,
-        "color": BRAND_COLOR,
-        "url": SITE_URL,
-    }
-    if prayer.category:
-        embed["title"] = prayer.category.name
-    if footer_parts:
-        embed["footer"] = {"text": " · ".join(footer_parts)}
-    return embed
-
-
-def amin_components(count: int) -> list[dict[str, Any]]:
-    label = "آمين" if count <= 0 else f"آمين · {count}"
-    return [
-        {
-            "type": 1,
-            "components": [
-                {
-                    "type": 2,
-                    "style": 1,
-                    "label": label,
-                    "emoji": {"name": "🤲"},
-                    "custom_id": "amin",
-                }
-            ],
-        }
-    ]
+    return {"description": f"**﴿ {prayer.text} ﴾**", "color": BRAND_COLOR}
 
 
 def help_embed() -> dict[str, Any]:

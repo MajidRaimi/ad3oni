@@ -15,18 +15,12 @@ class DiscordRest:
         return {"Authorization": f"Bot {self._token}"}
 
     async def post_message(
-        self,
-        channel_id: str,
-        embed: dict[str, Any],
-        components: list[dict[str, Any]] | None = None,
+        self, channel_id: str, embed: dict[str, Any]
     ) -> httpx.Response:
-        payload: dict[str, Any] = {"embeds": [embed]}
-        if components is not None:
-            payload["components"] = components
         return await self._http.post(
             f"{DISCORD_API_BASE}/channels/{channel_id}/messages",
             headers=self._headers,
-            json=payload,
+            json={"embeds": [embed]},
         )
 
     async def edit_original(

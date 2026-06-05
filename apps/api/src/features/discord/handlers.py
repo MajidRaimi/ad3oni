@@ -1,6 +1,6 @@
 from collections.abc import Awaitable, Callable
 from dataclasses import dataclass
-from typing import Any, cast
+from typing import Any
 
 import httpx
 from arq import ArqRedis
@@ -9,7 +9,6 @@ from openai import AsyncOpenAI
 
 from src.features.daily.service import DailyService
 from src.features.discord.embeds import (
-    amin_components,
     help_embed,
     info_embed,
     prayer_embed,
@@ -20,12 +19,11 @@ from src.features.discord.keys import (
     APPLICATION_COMMAND_AUTOCOMPLETE_RESULT,
     CHANNEL_MESSAGE_WITH_SOURCE,
     DEFERRED_CHANNEL_MESSAGE_WITH_SOURCE,
+    DEFERRED_UPDATE_MESSAGE,
     EPHEMERAL_FLAG,
     MANAGE_GUILD,
     MESSAGE_COMPONENT,
     PONG,
-    UPDATE_MESSAGE,
-    amin_count_key,
     submit_cooldown_key,
 )
 from src.features.discord.parse import DEFAULT_TIMEZONE, parse_schedule
@@ -60,14 +58,9 @@ class InteractionResult:
 
 
 def _message(
-    embeds: list[dict[str, Any]],
-    components: list[dict[str, Any]] | None = None,
-    *,
-    ephemeral: bool = False,
+    embeds: list[dict[str, Any]], *, ephemeral: bool = False
 ) -> dict[str, Any]:
     data: dict[str, Any] = {"embeds": embeds}
-    if components is not None:
-        data["components"] = components
     if ephemeral:
         data["flags"] = EPHEMERAL_FLAG
     return {"type": CHANNEL_MESSAGE_WITH_SOURCE, "data": data}
@@ -171,9 +164,7 @@ async def _handle_daily(deps: DiscordDeps) -> InteractionResult:
         prayer = await service.get_daily()
     except NotFoundError:
         return InteractionResult(_ephemeral("لا توجد أدعية متاحة بعد."))
-    return InteractionResult(
-        _message([prayer_embed(prayer)], amin_components(0))
-    )
+    return InteractionResult(_message([prayer_embed(prayer)]))
 
 
 async def _handle_random(
@@ -186,9 +177,7 @@ async def _handle_random(
         )
     except NotFoundError:
         return InteractionResult(_ephemeral("لا توجد أدعية مطابقة."))
-    return InteractionResult(
-        _message([prayer_embed(prayer)], amin_components(0))
-    )
+    return InteractionResult(_message([prayer_embed(prayer)]))
 
 
 async def _handle_search(
@@ -399,20 +388,7 @@ async def _handle_schedule_remove(
 async def _handle_component(
     payload: dict[str, Any], deps: DiscordDeps
 ) -> InteractionResult:
-    custom_id = payload["data"].get("custom_id")
-    message = payload.get("message", {})
-    embeds = message.get("embeds", [])
-    if custom_id != "amin":
-        return InteractionResult({"type": UPDATE_MESSAGE, "data": {"embeds": embeds}})
-    count = await cast(
-        "Awaitable[int]", deps.queue.incr(amin_count_key(message.get("id", "")))
-    )
-    return InteractionResult(
-        {
-            "type": UPDATE_MESSAGE,
-            "data": {"embeds": embeds, "components": amin_components(count)},
-        }
-    )
+    return InteractionResult({"type": DEFERRED_UPDATE_MESSAGE})
 
 
 async def _handle_autocomplete(
