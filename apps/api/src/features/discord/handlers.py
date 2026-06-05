@@ -125,16 +125,15 @@ def _schedule_summary(schedule: Schedule, category_names: dict[str, str]) -> str
     )
     content = content_label_ar(schedule.content_type, category_display)
     return (
-        f"• **{content}** — {when} {timezone_label_ar(schedule.timezone)} — "
-        f"في <#{schedule.channel_id}>\n"
-        f"المعرّف: `{schedule.id}` · `{schedule.cron}`"
+        f"- `{schedule.id}` - {content} {when} "
+        f"{timezone_label_ar(schedule.timezone)} في <#{schedule.channel_id}>"
     )
 
 
 def _confirm_created(
     schedules: list[Schedule], category_names: dict[str, str]
 ) -> str:
-    lines = "\n\n".join(
+    lines = "\n".join(
         _schedule_summary(schedule, category_names) for schedule in schedules
     )
     return f"تمت إضافة الجدولة:\n{lines}"
@@ -393,9 +392,7 @@ async def _handle_schedule_list(
     if not schedules:
         return InteractionResult(_ephemeral("لا توجد جدولات في هذا الخادم."))
     names = await _category_names(deps, schedules)
-    body = "\n\n".join(
-        _schedule_summary(schedule, names) for schedule in schedules
-    )
+    body = "\n".join(_schedule_summary(schedule, names) for schedule in schedules)
     return InteractionResult(_message([info_embed(body)], ephemeral=True))
 
 
