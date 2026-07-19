@@ -59,7 +59,7 @@ const WebFrame = () => (
     </div>
     <div className="px-6 py-8 text-center">
       <p className="text-xs tracking-wide text-violet">دعاء اليوم</p>
-      <p className="mt-3 font-display text-xl leading-[1.9] text-royal">{samplePrayer}</p>
+      <p className="mt-3 font-naskh text-lg leading-[1.95] text-royal">{samplePrayer}</p>
     </div>
   </div>
 );

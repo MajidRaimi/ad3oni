@@ -18,7 +18,7 @@ export const AboutSection = () => (
           <div className="dotted-bg flex h-full items-center justify-center rounded-3xl p-10 text-paper shadow-royal md:p-14">
             <div className="flex flex-col items-center gap-6">
               <BracePrayer braceClassName="md:text-[110px]">
-                <p className="font-display text-2xl text-paper md:text-[28px]">
+                <p className="font-naskh text-xl text-paper md:text-2xl">
                   {ghafirVerse.text}
                 </p>
               </BracePrayer>

@@ -13,7 +13,7 @@ export const RewardSection = () => (
           <div className="flex h-full items-center justify-center rounded-3xl border border-paper/10 bg-paper/5 p-10 md:p-14">
             <div className="flex flex-col items-center gap-6">
               <BracePrayer braceClassName="text-lilac/40 md:text-[110px]">
-                <p className="font-display text-2xl text-paper md:text-[28px]">
+                <p className="font-naskh text-xl text-paper md:text-2xl">
                   {rewardHadith.text}
                 </p>
               </BracePrayer>
