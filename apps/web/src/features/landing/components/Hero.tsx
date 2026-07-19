@@ -5,6 +5,7 @@ import { motion, useReducedMotion, type Variants } from "motion/react";
 import { useQuery } from "@tanstack/react-query";
 import { buttonVariants } from "@/shared/ui/button";
 import { randomPrayerQueryOptions } from "@/features/prayers/queries";
+import { ShareButton } from "@/features/share/components/ShareButton";
 import { dailyPrayer } from "../data/prayer";
 import { BracePrayer } from "./BracePrayer";
 
@@ -63,9 +64,9 @@ export const Hero = () => {
           variants={item}
           className="flex flex-col items-center gap-3 sm:flex-row"
         >
-          <a href="#share" className={buttonVariants({ variant: "paper", size: "lg" })}>
+          <ShareButton variant="paper" size="lg">
             شاركنا دعاءك
-          </a>
+          </ShareButton>
           <a
             href="#platforms"
             className={buttonVariants({ variant: "outline", size: "lg", className: "text-paper" })}
