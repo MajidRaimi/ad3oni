@@ -1,10 +1,15 @@
+import asyncio
 from typing import Any
 
 import httpx
 
 from src.shared.errors.exceptions import UpstreamError
+from src.shared.logging.setup import get_logger
+
+logger = get_logger("api.pocketbase")
 
 _SUPERUSER_AUTH_PATH = "/api/collections/_superusers/auth-with-password"
+_STALE_TOKEN_STATUSES = frozenset({401, 403})
 
 
 class PocketBaseClient:
@@ -16,6 +21,8 @@ class PocketBaseClient:
         self._email = email
         self._password = password
         self._token: str | None = None
+        self._token_version = 0
+        self._auth_lock = asyncio.Lock()
 
     @property
     def has_credentials(self) -> bool:
@@ -23,6 +30,7 @@ class PocketBaseClient:
 
     async def authenticate(self) -> None:
         if not self.has_credentials:
+            logger.warning("pocketbase_credentials_missing writes_will_be_rejected")
             return
         response = await self._send(
             "POST",
@@ -34,6 +42,16 @@ class PocketBaseClient:
         except httpx.HTTPError as exc:
             raise UpstreamError(f"PocketBase authentication failed: {exc}") from exc
         self._token = response.json().get("token")
+        self._token_version += 1
+
+    async def _refresh_token(self, seen_version: int) -> bool:
+        if not self.has_credentials:
+            return False
+        async with self._auth_lock:
+            if self._token_version != seen_version:
+                return True
+            await self.authenticate()
+        return True
 
     async def list_records(
         self, collection: str, params: dict[str, Any] | None = None
@@ -77,14 +95,7 @@ class PocketBaseClient:
 
     async def delete_record(self, collection: str, record_id: str) -> None:
         path = f"/api/collections/{collection}/records/{record_id}"
-        response = await self._send("DELETE", path)
-        if response.status_code == 401 and self.has_credentials:
-            await self.authenticate()
-            response = await self._send("DELETE", path)
-        try:
-            response.raise_for_status()
-        except httpx.HTTPError as exc:
-            raise UpstreamError(f"PocketBase request failed: {exc}") from exc
+        await self._authorized_send("DELETE", path)
 
     async def _request(
         self,
@@ -94,16 +105,29 @@ class PocketBaseClient:
         json: dict[str, Any] | None = None,
         params: dict[str, Any] | None = None,
     ) -> dict[str, Any] | None:
+        response = await self._authorized_send(method, path, json=json, params=params)
+        data: dict[str, Any] = response.json()
+        return data
+
+    async def _authorized_send(
+        self,
+        method: str,
+        path: str,
+        *,
+        json: dict[str, Any] | None = None,
+        params: dict[str, Any] | None = None,
+    ) -> httpx.Response:
+        version = self._token_version
         response = await self._send(method, path, json=json, params=params)
-        if response.status_code == 401 and self.has_credentials:
-            await self.authenticate()
+        if response.status_code in _STALE_TOKEN_STATUSES and await self._refresh_token(
+            version
+        ):
             response = await self._send(method, path, json=json, params=params)
         try:
             response.raise_for_status()
         except httpx.HTTPError as exc:
             raise UpstreamError(f"PocketBase request failed: {exc}") from exc
-        data: dict[str, Any] = response.json()
-        return data
+        return response
 
     async def _send(
         self,
