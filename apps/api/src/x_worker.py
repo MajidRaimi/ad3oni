@@ -57,6 +57,7 @@ async def post_daily(ctx: dict[Any, Any]) -> None:
 
 
 class WorkerSettings:
+    queue_name = "ad3oni:x:queue"
     functions: list[Any] = []
     cron_jobs = [cron(post_daily, hour=8, minute=0, run_at_startup=False)]
     timezone = ZoneInfo(MECCA_TIMEZONE)
