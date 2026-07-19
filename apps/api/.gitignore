@@ -1,1 +1,4 @@
 src/features/seed/candidates.json
+
+# X session cookies, never commit
+x-session.json
