@@ -3,6 +3,7 @@ from typing import Any, cast
 
 from playwright.async_api import Page, async_playwright
 from playwright.async_api import TimeoutError as PlaywrightTimeout
+
 from src.features.x.keys import (
     ACCOUNT_SWITCHER,
     COMPOSE_URL,

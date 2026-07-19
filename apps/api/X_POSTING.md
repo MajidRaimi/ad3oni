@@ -19,7 +19,7 @@ Run locally, not on the server. A browser window opens; log in yourself.
 cd apps/api
 uv sync --group playwright
 uv run playwright install chromium
-uv run python scripts/save_x_session.py
+uv run python -m scripts.save_x_session
 ```
 
 The script never sees your password. It waits until a logged-in timeline is
@@ -49,7 +49,7 @@ rm apps/api/x-session.json
 ### 4. Dry run
 
 ```bash
-X_ENABLED=true X_DRY_RUN=true uv run python scripts/post_daily_to_x.py
+X_ENABLED=true X_DRY_RUN=true uv run python -m scripts.post_daily_to_x
 ```
 
 Confirms prayer selection and formatting without touching X.
