@@ -14,7 +14,7 @@ export const PrayerCard = ({ prayer }: PrayerCardProps) => (
         {prayer.category}
       </span>
     ) : null}
-    <p className="font-sans text-sm leading-[1.85] text-royal">{prayer.text}</p>
+    <p className="font-naskh text-[15px] leading-[2] text-royal">{prayer.text}</p>
     {prayer.source ? (
       <span className="mt-auto text-[11px] text-neutral/70">
         <bdi>{prayer.source}</bdi>

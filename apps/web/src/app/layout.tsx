@@ -1,6 +1,17 @@
-import type { Metadata } from "next";
-import { Rakkas, Geist_Mono } from "next/font/google";
+import type { Metadata, Viewport } from "next";
+import { Rakkas, Geist_Mono, Amiri } from "next/font/google";
 import localFont from "next/font/local";
+import { JsonLd } from "@/shared/seo/JsonLd";
+import {
+  BRAND_BACKGROUND,
+  BRAND_COLOR,
+  SITE_DESCRIPTION,
+  SITE_KEYWORDS,
+  SITE_NAME,
+  SITE_TAGLINE,
+  SITE_URL,
+  TWITTER_HANDLE,
+} from "@/shared/seo/site";
 import { Providers } from "./providers";
 import "./globals.css";
 
@@ -26,17 +37,74 @@ const tajawal = localFont({
   ],
 });
 
+const amiri = Amiri({
+  weight: ["400", "700"],
+  subsets: ["arabic"],
+  variable: "--font-amiri",
+  display: "swap",
+});
+
 const geistMono = Geist_Mono({
   subsets: ["latin"],
   variable: "--font-geist-mono",
   display: "swap",
 });
 
-const verse = "وَقَالَ رَبُّكُمُ ادْعُونِي أَسْتَجِبْ لَكُمْ";
+const TITLE = `${SITE_NAME} · ${SITE_TAGLINE}`;
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: BRAND_BACKGROUND },
+    { media: "(prefers-color-scheme: dark)", color: BRAND_COLOR },
+  ],
+};
 
 export const metadata: Metadata = {
-  title: "ادْعُونِي · تذكير يومي بالدعاء",
-  description: `${verse} — مبادرة مفتوحة المصدر تذكّرك بالدعاء كل يوم عبر منصاتك المفضلة.`,
+  metadataBase: new URL(SITE_URL),
+  title: {
+    default: TITLE,
+    template: `%s · ${SITE_NAME}`,
+  },
+  description: SITE_DESCRIPTION,
+  keywords: SITE_KEYWORDS,
+  applicationName: SITE_NAME,
+  category: "religion",
+  alternates: {
+    canonical: "/",
+  },
+  openGraph: {
+    type: "website",
+    locale: "ar_SA",
+    url: SITE_URL,
+    siteName: SITE_NAME,
+    title: TITLE,
+    description: SITE_DESCRIPTION,
+  },
+  twitter: {
+    card: "summary_large_image",
+    site: TWITTER_HANDLE,
+    creator: TWITTER_HANDLE,
+    title: TITLE,
+    description: SITE_DESCRIPTION,
+  },
+  appleWebApp: {
+    capable: true,
+    title: SITE_NAME,
+    statusBarStyle: "default",
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+      "max-video-preview": -1,
+    },
+  },
 };
 
 export default function RootLayout({
@@ -48,9 +116,10 @@ export default function RootLayout({
     <html
       lang="ar"
       dir="rtl"
-      className={`${rakkas.variable} ${tajawal.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${rakkas.variable} ${tajawal.variable} ${amiri.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full">
+        <JsonLd />
         <Providers>{children}</Providers>
       </body>
     </html>

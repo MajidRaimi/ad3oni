@@ -21,7 +21,7 @@ export const platforms: Platform[] = [
     name: "الموقع",
     handle: "ad3oni.com",
     description: "افتح الموقع في أي وقت لتقرأ دعاء اليوم وتشارك دعاءك.",
-    href: "https://www.ad3oni.com",
+    href: "https://ad3oni.com",
     cta: "شاركنا دعاءك",
     status: "live",
     icon: Globe,

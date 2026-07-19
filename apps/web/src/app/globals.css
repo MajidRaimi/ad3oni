@@ -13,6 +13,7 @@
   --color-neutral: #6b6486;
 
   --font-display: var(--font-rakkas), "Geeza Pro", Georgia, serif;
+  --font-naskh: var(--font-amiri), "Amiri", "Geeza Pro", Georgia, serif;
   --font-sans: var(--font-tajawal), "Geeza Pro", Tahoma, Arial, sans-serif;
   --font-mono: var(--font-geist-mono), ui-monospace, "SF Mono", Menlo, Consolas, monospace;
 
@@ -142,6 +143,10 @@
 
 :is(h1, h2, h3, h4, p).font-display {
   line-height: 1.8;
+}
+
+:is(h1, h2, h3, h4, p).font-naskh {
+  line-height: 2.05;
 }
 
 @theme {

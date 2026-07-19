@@ -50,7 +50,7 @@ export const Hero = () => {
 
         <motion.div variants={item}>
           <BracePrayer>
-            <p className="font-display text-4xl text-paper sm:text-5xl md:text-6xl">
+            <p className="font-naskh text-3xl text-paper sm:text-4xl md:text-5xl">
               {prayerText}
             </p>
           </BracePrayer>
