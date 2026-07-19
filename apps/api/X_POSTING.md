@@ -13,17 +13,29 @@ The feature is inert until `X_ENABLED=true`, so merging it changes nothing.
 
 ### 1. Capture a session
 
-Run locally, not on the server. A browser window opens; log in yourself.
+**Never log in through automation.** Playwright's bundled Chromium is trivially
+fingerprinted by X, and logging in through it will get the account temporarily
+restricted. That happened once already. Take the cookies from the browser you
+are already signed into instead.
+
+Make sure the browser is switched to the account you want to post from. If you
+are signed into several, the active one is what gets captured.
+
+1. Open https://x.com in your normal browser as `@ad3oni_`.
+2. DevTools -> Application -> Storage -> Cookies -> `https://x.com`
+3. Copy `auth_token` and `ct0`.
 
 ```bash
 cd apps/api
 uv sync --group playwright
 uv run playwright install chromium
-uv run python -m scripts.save_x_session
+X_AUTH_TOKEN=... X_CT0=... uv run python -m scripts.build_x_session
+uv run python -m scripts.verify_x_session
 ```
 
-The script never sees your password. It waits until a logged-in timeline is
-visible, then writes `apps/api/x-session.json` containing only cookies.
+`build_x_session` touches nothing on the network. `verify_x_session` loads the
+timeline once and reports which handle the session belongs to, so a personal
+account cannot be wired up by mistake.
 
 ### 2. Store the session
 
