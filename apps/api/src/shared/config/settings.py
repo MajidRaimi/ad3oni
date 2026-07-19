@@ -58,6 +58,14 @@ class Settings(BaseSettings):
     discord_bot_token: str = ""
     discord_guild_id: str = ""
     discord_schedule_limit: int = 15
+    discord_alert_channel_id: str = ""
+
+    x_enabled: bool = False
+    x_handle: str = "ad3oni_"
+    x_session_state: str = ""
+    x_post_timeout_ms: int = 45_000
+    x_headless: bool = True
+    x_dry_run: bool = False
 
     @property
     def is_production(self) -> bool:

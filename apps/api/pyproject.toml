@@ -1,6 +1,6 @@
 [project]
 name = "api"
-version = "0.1.16"
+version = "0.2.0"
 requires-python = ">=3.14"
 dependencies = [
     "fastapi==0.136.3",
@@ -16,6 +16,9 @@ dependencies = [
 ]
 
 [dependency-groups]
+playwright = [
+    "playwright==1.61.0",
+]
 dev = [
     "ruff==0.8.6",
     "mypy==1.14.1",
