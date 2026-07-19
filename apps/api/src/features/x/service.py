@@ -2,6 +2,7 @@ from datetime import datetime
 from zoneinfo import ZoneInfo
 
 from arq import ArqRedis
+
 from src.features.daily.keys import MECCA_TIMEZONE
 from src.features.daily.service import DailyService
 from src.features.discord.embeds import info_embed

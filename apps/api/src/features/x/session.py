@@ -2,6 +2,7 @@ import json
 from typing import Any
 
 from arq import ArqRedis
+
 from src.features.x.keys import X_SESSION
 from src.shared.logging.setup import get_logger
 
