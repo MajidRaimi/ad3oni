@@ -56,3 +56,18 @@ async def load_session(redis: ArqRedis, bootstrap: str) -> Cookies | None:
 
 async def save_session(redis: ArqRedis, cookies: Cookies) -> None:
     await redis.set(X_SESSION, json.dumps(cookies))
+
+
+def to_browser_cookies(cookies: Cookies) -> list[dict[str, Any]]:
+    return [
+        {
+            "name": name,
+            "value": value,
+            "domain": ".x.com",
+            "path": "/",
+            "secure": True,
+            "httpOnly": name == "auth_token",
+            "sameSite": "None" if name == "auth_token" else "Lax",
+        }
+        for name, value in cookies.items()
+    ]

@@ -1,25 +1,28 @@
 # Posting the daily du'a to X
 
-This posts through [twikit](https://github.com/d60/twikit), which drives X's
-internal API using a logged-in session's cookies. No developer key, no cost, no
-browser.
+This drives a real browser ([patchright](https://github.com/Kaliiiiiiiiii-Vinyzu/patchright),
+an undetected Playwright fork) with a logged-in session's cookies. No developer
+key, no API cost.
 
-**Read this first.** This is unofficial access, the same category that got the
-account temporarily restricted once already. The realistic failure mode is
-suspension of `@ad3oni_`. The trade was accepted deliberately: the official API
-costs about $0.45/month at one link-free post per day and cannot get the account
-suspended. twikit is also unmaintained since early 2025, so it may break if X
-changes its internal API.
+**Why a browser and not a library.** twikit (X's internal API) broke the moment X
+changed a script file and is unmaintained. A real browser posts through the same
+UI a human uses, so X cannot break it without breaking their own website. That is
+the most sustainable of the free routes.
 
-The feature is inert until `X_ENABLED=true`, so merging it changes nothing.
+**The risk, stated plainly.** This is still automation against X, and the account
+was temporarily restricted once before (by an automated *login*, since removed).
+The realistic worst case is suspension. Mitigations: we never log in (cookies
+only), post once a day (human frequency), and patchright plus a user-agent fix
+hide the automation markers. But the risk is not zero.
+
+The feature is inert until `X_ENABLED=true`.
 
 ## One-time setup
 
 ### 1. Capture a session
 
-**Never log in through automation.** Take the cookies from the browser you are
-already signed into. Make sure it is switched to the account you want to post
-from; if you are signed into several, the active one is what you capture.
+Never log in through automation. Copy the cookies from the browser you are
+already signed into, on the account you want to post from.
 
 1. Open https://x.com in your normal browser as `@ad3oni_`.
 2. DevTools -> Application -> Storage -> Cookies -> `https://x.com`
@@ -28,72 +31,68 @@ from; if you are signed into several, the active one is what you capture.
 ```bash
 cd apps/api
 uv sync --group x
+patchright install chromium
 X_AUTH_TOKEN=... X_CT0=... uv run python -m scripts.build_x_session
 uv run python -m scripts.verify_x_session
 ```
 
-`build_x_session` makes no network calls. `verify_x_session` asks X whose session
-this is and fails loudly if it is not `@ad3oni_`, so a personal account cannot be
-wired up by mistake.
+`build_x_session` makes no network calls. `verify_x_session` opens the browser
+read-only, asks X whose session this is, and fails loudly if it is not
+`@ad3oni_` (so a personal account cannot be wired up by mistake). It posts
+nothing.
 
 ### 2. Store the session
 
-`x-session.json` is `{"auth_token":"...","ct0":"..."}`, gitignored, and must stay
-that way. Put its contents in `X_SESSION_STATE`, sync to Infisical, delete the
-local file.
-
-```bash
-# push to Infisical via the sync-env skill, then:
-rm apps/api/x-session.json
-```
+`x-session.json` is `{"auth_token":"...","ct0":"..."}`, gitignored. Put its
+contents in `X_SESSION_STATE`, sync to Infisical, delete the local file.
 
 ### 3. Configure
 
 | Variable | Purpose |
 |---|---|
-| `X_ENABLED` | Master switch. Leave `false` until you have tested. |
+| `X_ENABLED` | Master switch. Leave `false` until tested. |
 | `X_SESSION_STATE` | The captured cookies. Bootstraps Redis on first run. |
 | `X_HANDLE` | The account to post from and verify against. Default `ad3oni_`. |
-| `X_DRY_RUN` | Logs the post text and exits without posting. |
+| `X_HEADLESS` | `true` in production. Headed needs a real display. |
+| `X_DRY_RUN` | Logs the post text and exits without opening a browser. |
 | `DISCORD_ALERT_CHANNEL_ID` | Where failures are reported. Strongly recommended. |
 
-### 4. Dry run
+## Stealth notes
 
-```bash
-X_ENABLED=true X_DRY_RUN=true uv run python -m scripts.post_daily_to_x
-```
-
-Confirms prayer selection and formatting without touching X.
-
-## Deploying
-
-Built from `Dockerfile.x` (a slim, browserless image, ~330MB). Runs as the
-`ad3oni-x-worker` Coolify app, an arq worker on its own queue `ad3oni:x:queue`
-with an 08:00 Mecca cron. `PROCESS=once` runs a single post and exits, for dry
-runs and manual triggers.
+- Real browser via **patchright**, which patches `navigator.webdriver`, CDP
+  leaks, and the automation command flags before the page loads.
+- Headless Chromium leaks `HeadlessChrome` in the user-agent; the poster detects
+  the real UA and strips the `Headless` token so it matches genuine Chrome of the
+  same version (client hints stay consistent).
+- Branded Google Chrome (`channel="chrome"`, whose real TLS fingerprint is
+  strongest) does not ship for Linux arm64, and the server is arm64, so we use
+  patchright's patched Chromium instead.
+- Persistent browser profile at `/tmp/ad3oni-x-profile` for a consistent
+  fingerprint across runs.
 
 ## How it behaves
 
-- **Session lives in Redis** at `ad3oni:x:session`, refreshed after every post.
-  X rotates `ct0`, so writing the refreshed cookies back is what keeps the session
-  alive. `X_SESSION_STATE` is only a bootstrap.
-- **Posts are deduplicated** per Mecca day at `ad3oni:x:posted:<date>`, so a retry
-  or double-fire cannot post twice. A `DuplicateTweet` from X is treated as a
-  success (X rejects identical posts).
-- **Every post is verified** by the tweet id X returns from `create_tweet`. No id
-  means the post is reported as a failure, not assumed to have worked.
-- **Wrong-account guard**: before posting, the session's handle is checked against
-  `X_HANDLE`. A personal-account session is refused, not posted to.
-- **Du'as longer than 280 characters are skipped**, not truncated, and an alert is
-  sent. About 2 of 83 current prayers are affected. X counts each haraka as a
-  character, so vocalised text is much longer than it looks.
-- **The bot never logs in.** If the session expires or the account is locked it
-  raises, alerts, and stops. Re-run step 1.
+- **Cookies live in Redis** at `ad3oni:x:session`, refreshed after each post
+  (X rotates `ct0`). `X_SESSION_STATE` is only a bootstrap.
+- **Deduplicated** per Mecca day at `ad3oni:x:posted:<date>`.
+- **Verified by reading the profile timeline back** and matching the text. An
+  unverified post is reported as a failure, not assumed.
+- **Wrong-account guard** refuses to post if the session is not `X_HANDLE`.
+- **Du'as over 280 characters are skipped**, not truncated. About 2 of 83
+  current prayers are affected (X counts each haraka).
+- **Never logs in.** If the session expires or the account is locked it raises,
+  alerts to Discord, and stops. Re-capture the session.
+
+## Deploying
+
+Built from `Dockerfile.x` on the Playwright base image (has Chromium deps and
+Xvfb), running as the `ad3oni-x-worker` Coolify app: an arq worker on its own
+queue `ad3oni:x:queue` with an 08:00 Mecca cron. `PROCESS=once` runs a single
+post and exits, for dry runs and manual triggers.
 
 ## When it breaks
 
-It will. Cookies expire, and X changes its internal API without notice (twikit is
-unmaintained). Failures alert to Discord if `DISCORD_ALERT_CHANNEL_ID` is set. If
-posts stop, check that channel first, then re-capture the session. If twikit
-itself breaks against a changed X API, the fallback is the official API, which
-reuses everything here except `src/features/x/poster.py`.
+The fragile surface is the compose UI selectors in `src/features/x/keys.py`
+(`tweetTextarea_0`, `tweetButton`), which change less often than X's internal
+API but still change. Failures alert to Discord. If posts stop, check that
+channel, then re-capture the session.
