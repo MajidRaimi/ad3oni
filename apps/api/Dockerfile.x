@@ -25,6 +25,7 @@ COPY scripts ./scripts
 HEALTHCHECK --interval=60s --timeout=10s --start-period=20s --retries=3 \
     CMD test "$PROCESS" = "once" || pgrep -f "arq src.x_worker" > /dev/null || exit 1
 
-# Headed Chrome (patchright's recommended stealth mode) needs a display; xvfb-run
-# provides a virtual one inside the container.
-CMD ["sh", "-c", "if [ \"$PROCESS\" = \"once\" ]; then exec xvfb-run -a python -m scripts.post_daily_to_x; else exec xvfb-run -a arq src.x_worker.WorkerSettings; fi"]
+# Runs headless, which needs no display, so no xvfb wrapper. xvfb-run also
+# swallowed the worker's logs, hiding whether the cron was firing. If X_HEADLESS
+# is ever set false, wrap the command in `xvfb-run -a` to supply a display.
+CMD ["sh", "-c", "if [ \"$PROCESS\" = \"once\" ]; then exec python -m scripts.post_daily_to_x; else exec arq src.x_worker.WorkerSettings; fi"]
