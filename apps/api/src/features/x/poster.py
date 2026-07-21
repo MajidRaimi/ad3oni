@@ -123,12 +123,12 @@ async def _assert_logged_in(page: Page, handle: str) -> None:
 
 async def _compose(page: Page, text: str) -> None:
     await page.goto(COMPOSE_URL, wait_until="domcontentloaded")
-    editor = page.locator(EDITOR)
+    editor = page.locator(EDITOR).first
     await editor.wait_for(state="visible")
     await editor.click()
     await page.keyboard.insert_text(text)
 
-    submit = page.locator(SUBMIT)
+    submit = page.locator(SUBMIT).first
     await submit.wait_for(state="visible")
     if await submit.is_disabled():
         raise PostVerificationError("compose button stayed disabled; text rejected")
