@@ -7,35 +7,43 @@ from src.features.ingestion.prompts import (
 from src.features.ingestion.schema import DiacritizationResult
 from src.shared.ai.structured import complete_json
 from src.shared.arabic.normalize import harakat_preserves_wording
+from src.shared.errors.exceptions import UpstreamError
 from src.shared.logging.setup import get_logger
 from src.shared.queue.context import WorkerContext
 
 logger = get_logger("api.ingestion")
 
 
-async def _add_harakat(context: WorkerContext, corrected: str) -> str:
-    result = await complete_json(
-        context.ai,
-        context.settings.ai_model,
-        diacritization_system(context.settings.diacritization_mode),
-        diacritization_user(corrected),
-        DiacritizationResult,
-        reasoning_effort=context.settings.diacritization_effort,
-    )
+async def _add_harakat(context: WorkerContext, corrected: str) -> str | None:
+    try:
+        result = await complete_json(
+            context.ai,
+            context.settings.ai_model,
+            diacritization_system(context.settings.diacritization_mode),
+            diacritization_user(corrected),
+            DiacritizationResult,
+            reasoning_effort=context.settings.diacritization_effort,
+        )
+    except UpstreamError:
+        logger.info("diacritization_ai_unavailable")
+        return None
     return result.diacritized_text.strip()
 
 
 async def _verify_harakat(
     context: WorkerContext, corrected: str, diacritized: str
 ) -> str:
-    result = await complete_json(
-        context.ai,
-        context.settings.ai_model,
-        DIACRITIZATION_VERIFY_SYSTEM,
-        diacritization_verify_user(corrected, diacritized),
-        DiacritizationResult,
-        reasoning_effort=context.settings.diacritization_effort,
-    )
+    try:
+        result = await complete_json(
+            context.ai,
+            context.settings.ai_model,
+            DIACRITIZATION_VERIFY_SYSTEM,
+            diacritization_verify_user(corrected, diacritized),
+            DiacritizationResult,
+            reasoning_effort=context.settings.diacritization_effort,
+        )
+    except UpstreamError:
+        return diacritized
     candidate = result.diacritized_text.strip()
     if candidate and harakat_preserves_wording(corrected, candidate):
         return candidate

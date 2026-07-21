@@ -9,6 +9,7 @@ from src.features.daily.selection import assign_daily_prayer
 from src.features.discord.scheduler import run_due_schedules
 from src.features.ingestion.finalize import finalize_failed
 from src.features.ingestion.pipeline import run_pipeline
+from src.features.ingestion.reaper import reap_stuck_prayers
 from src.shared.ai.client import create_ai_client
 from src.shared.config.settings import get_settings
 from src.shared.logging.setup import configure_logging, get_logger
@@ -78,11 +79,21 @@ async def dispatch_schedules(ctx: dict[Any, Any]) -> None:
         logger.exception("discord_schedule_dispatch_failed")
 
 
+async def reap_prayers(ctx: dict[Any, Any]) -> None:
+    context = get_worker_context(ctx)
+    redis: ArqRedis = ctx["redis"]
+    try:
+        await reap_stuck_prayers(context, redis)
+    except Exception:
+        logger.exception("prayer_reaper_failed")
+
+
 class WorkerSettings:
     functions = [process_prayer]
     cron_jobs = [
         cron(assign_daily, hour=0, minute=0, run_at_startup=False),
         cron(dispatch_schedules, minute=set(range(60)), second=0),
+        cron(reap_prayers, minute={0, 10, 20, 30, 40, 50}, second=15),
     ]
     timezone = ZoneInfo(MECCA_TIMEZONE)
     on_startup = startup
