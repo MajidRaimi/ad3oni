@@ -13,7 +13,6 @@ TWEET_TEXT = '[data-testid="tweetText"]'
 MAX_POST_LENGTH = 280
 
 _USER_DATA_DIR = "/tmp/ad3oni-x-profile"
-_UA_PROBE_DIR = "/tmp/ad3oni-x-ua-probe"
 
 
 def posted_key(day: str) -> str:

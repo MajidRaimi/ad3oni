@@ -14,7 +14,6 @@ from patchright.async_api import (
 )
 
 from src.features.x.keys import (
-    _UA_PROBE_DIR,
     _USER_DATA_DIR,
     COMPOSE_URL,
     EDITOR,
@@ -50,37 +49,16 @@ class PostResult:
     cookies: Cookies
 
 
-async def _detect_clean_user_agent(playwright: Any, channel: str, headless: bool) -> str | None:
-    if not headless:
-        return None
-    probe = await playwright.chromium.launch_persistent_context(
-        user_data_dir=_UA_PROBE_DIR,
-        channel=channel or None,
-        headless=headless,
-        no_viewport=True,
-    )
-    try:
-        page = await probe.new_page()
-        agent: str = await page.evaluate("() => navigator.userAgent")
-    finally:
-        await probe.close()
-    if "HeadlessChrome" not in agent:
-        return None
-    return agent.replace("HeadlessChrome", "Chrome")
-
-
 @asynccontextmanager
 async def _context(
     cookies: Cookies, *, headless: bool, channel: str, timeout_ms: int
 ) -> AsyncIterator[BrowserContext]:
     async with async_playwright() as playwright:
-        user_agent = await _detect_clean_user_agent(playwright, channel, headless)
         context = await playwright.chromium.launch_persistent_context(
             user_data_dir=_USER_DATA_DIR,
             channel=channel or None,
             headless=headless,
             no_viewport=True,
-            user_agent=user_agent,
         )
         context.set_default_timeout(timeout_ms)
         context.set_default_navigation_timeout(timeout_ms)
@@ -89,6 +67,21 @@ async def _context(
             yield context
         finally:
             await context.close()
+
+
+async def _new_page(context: BrowserContext, headless: bool) -> Page:
+    page = await context.new_page()
+    if not headless:
+        return page
+    agent: str = await page.evaluate("() => navigator.userAgent")
+    if "HeadlessChrome" not in agent:
+        return page
+    cdp = await context.new_cdp_session(page)
+    await cdp.send(
+        "Network.setUserAgentOverride",
+        {"userAgent": agent.replace("HeadlessChrome", "Chrome")},
+    )
+    return page
 
 
 async def _current_cookies(context: BrowserContext) -> Cookies:
@@ -136,6 +129,13 @@ async def _compose(page: Page, text: str) -> None:
     modifier = "Meta" if sys.platform == "darwin" else "Control"
     await page.keyboard.press(f"{modifier}+Enter")
 
+    # The composer clears/detaches once X accepts the post; wait for that signal
+    # rather than a fixed sleep so verification does not race the send.
+    try:
+        await editor.wait_for(state="detached", timeout=20_000)
+    except PlaywrightTimeout:
+        await page.wait_for_timeout(4000)
+
 
 async def _confirm_on_profile(page: Page, handle: str, text: str) -> bool:
     await page.goto(
@@ -157,7 +157,7 @@ async def resolve_handle(cookies: Cookies, *, headless: bool, channel: str) -> s
     async with _context(
         cookies, headless=headless, channel=channel, timeout_ms=45_000
     ) as context:
-        page = await context.new_page()
+        page = await _new_page(context, headless)
         return await _current_handle(page)
 
 
@@ -173,10 +173,9 @@ async def publish(
     async with _context(
         cookies, headless=headless, channel=channel, timeout_ms=timeout_ms
     ) as context:
-        page = await context.new_page()
+        page = await _new_page(context, headless)
         await _assert_logged_in(page, handle)
         await _compose(page, text)
-        await page.wait_for_timeout(3000)
         verified = await _confirm_on_profile(page, handle, text)
         cookies_out = await _current_cookies(context)
         return PostResult(verified=verified, cookies=cookies_out or cookies)
