@@ -5,7 +5,7 @@ import httpx
 from arq import ArqRedis, cron
 
 from src.features.daily.keys import MECCA_TIMEZONE
-from src.features.x.service import post_daily_to_x
+from src.features.x.schedule import dispatch_posts
 from src.shared.ai.client import create_ai_client
 from src.shared.config.settings import get_settings
 from src.shared.logging.setup import configure_logging, get_logger
@@ -47,19 +47,19 @@ async def shutdown(ctx: dict[Any, Any]) -> None:
     logger.info("x_worker_shutdown")
 
 
-async def post_daily(ctx: dict[Any, Any]) -> None:
+async def dispatch(ctx: dict[Any, Any]) -> None:
     context = get_worker_context(ctx)
     redis: ArqRedis = ctx["redis"]
     try:
-        await post_daily_to_x(context, redis)
+        await dispatch_posts(context, redis)
     except Exception:
-        logger.exception("x_daily_post_crashed")
+        logger.exception("x_dispatch_crashed")
 
 
 class WorkerSettings:
     queue_name = "ad3oni:x:queue"
     functions: list[Any] = []
-    cron_jobs = [cron(post_daily, hour=8, minute=0, run_at_startup=False)]
+    cron_jobs = [cron(dispatch, minute=set(range(60)), second=15, run_at_startup=False)]
     timezone = ZoneInfo(MECCA_TIMEZONE)
     on_startup = startup
     on_shutdown = shutdown
