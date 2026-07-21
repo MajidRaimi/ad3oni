@@ -14,6 +14,21 @@ MAX_POST_LENGTH = 280
 
 _USER_DATA_DIR = "/tmp/ad3oni-x-profile"
 
+# Mecca-time [start_hour, end_hour) windows. Each day one random minute inside
+# each window is chosen, so the three daily posts are spread and non-uniform.
+POST_WINDOWS: tuple[tuple[int, int], ...] = ((5, 9), (12, 16), (18, 22))
+GRACE_MINUTES = 9
+SLOT_TTL_SECONDS = 60 * 60 * 48
+PICK_TRIES = 6
 
-def posted_key(day: str) -> str:
-    return f"ad3oni:x:posted:{day}"
+
+def plan_key(day: str) -> str:
+    return f"ad3oni:x:plan:{day}"
+
+
+def slot_posted_key(day: str, slot: int) -> str:
+    return f"ad3oni:x:posted:{day}:{slot}"
+
+
+def posted_prayers_key(day: str) -> str:
+    return f"ad3oni:x:posted_prayers:{day}"

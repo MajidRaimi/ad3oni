@@ -1,7 +1,7 @@
 import asyncio
 
 import httpx
-from src.features.x.service import post_daily_to_x
+from src.features.x.service import post_one_now
 from src.shared.ai.client import create_ai_client
 from src.shared.config.settings import get_settings
 from src.shared.logging.setup import configure_logging, get_logger
@@ -27,7 +27,7 @@ async def main() -> None:
         await pocketbase.authenticate()
         context = WorkerContext(settings, pocketbase, create_ai_client(settings), http)
         try:
-            posted = await post_daily_to_x(context, redis)
+            posted = await post_one_now(context, redis)
         finally:
             await redis.aclose()
 

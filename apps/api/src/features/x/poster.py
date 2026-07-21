@@ -114,7 +114,10 @@ async def _assert_logged_in(page: Page, handle: str) -> None:
         )
 
 
-async def _compose(page: Page, text: str) -> None:
+async def _submit(page: Page, text: str) -> None:
+    """Compose and send. Raises only BEFORE the send, so a raise means nothing
+    was posted and the caller may safely retry. Once Ctrl+Enter is pressed the
+    post is committed and this never raises."""
     await page.goto(COMPOSE_URL, wait_until="domcontentloaded")
     editor = page.locator(EDITOR).first
     await editor.wait_for(state="visible")
@@ -129,11 +132,11 @@ async def _compose(page: Page, text: str) -> None:
     modifier = "Meta" if sys.platform == "darwin" else "Control"
     await page.keyboard.press(f"{modifier}+Enter")
 
-    # The composer clears/detaches once X accepts the post; wait for that signal
-    # rather than a fixed sleep so verification does not race the send.
+    # Committed. The composer detaches once X accepts the post; wait for that
+    # signal, best-effort, and never raise past this point.
     try:
         await editor.wait_for(state="detached", timeout=20_000)
-    except PlaywrightTimeout:
+    except Exception:
         await page.wait_for_timeout(4000)
 
 
@@ -175,7 +178,16 @@ async def publish(
     ) as context:
         page = await _new_page(context, headless)
         await _assert_logged_in(page, handle)
-        await _compose(page, text)
-        verified = await _confirm_on_profile(page, handle, text)
-        cookies_out = await _current_cookies(context)
+        await _submit(page, text)
+        # Post is committed. Everything below is best-effort; never raise, so a
+        # verification or cookie hiccup cannot make the caller retry and double
+        # post.
+        try:
+            verified = await _confirm_on_profile(page, handle, text)
+        except Exception:
+            verified = False
+        try:
+            cookies_out = await _current_cookies(context)
+        except Exception:
+            cookies_out = {}
         return PostResult(verified=verified, cookies=cookies_out or cookies)
