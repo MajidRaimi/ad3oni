@@ -9,7 +9,7 @@ from src.features.discord.embeds import info_embed
 from src.features.discord.rest import DiscordRest
 from src.features.prayers.schema import Prayer
 from src.features.x.keys import MAX_POST_LENGTH, X_LAST_POST, posted_key
-from src.features.x.poster import SessionExpiredError, publish
+from src.features.x.poster import SessionExpiredError, WrongAccountError, publish
 from src.features.x.session import load_session, save_session
 from src.shared.errors.exceptions import NotFoundError
 from src.shared.logging.setup import get_logger
@@ -74,30 +74,28 @@ async def post_daily_to_x(context: WorkerContext, redis: ArqRedis) -> bool:
         logger.info("x_dry_run text=%r", text)
         return False
 
-    state = await load_session(redis, settings.x_session_state)
-    if state is None:
+    cookies = await load_session(redis, settings.x_session_state)
+    if cookies is None:
         logger.error("x_no_session")
-        await _alert(context, "لا توجد جلسة محفوظة. شغّل scripts/save_x_session.py")
+        await _alert(context, "لا توجد جلسة محفوظة. شغّل scripts/build_x_session.py")
         return False
 
     try:
-        result = await publish(
-            text,
-            storage_state=state,
-            handle=settings.x_handle,
-            headless=settings.x_headless,
-            timeout_ms=settings.x_post_timeout_ms,
-        )
+        result = await publish(text, cookies=cookies, handle=settings.x_handle)
     except SessionExpiredError as error:
         logger.error("x_session_expired")
         await _alert(context, f"انتهت صلاحية الجلسة: {error}")
+        return False
+    except WrongAccountError as error:
+        logger.error("x_wrong_account %s", error)
+        await _alert(context, f"الجلسة لحساب خاطئ: {error}")
         return False
     except Exception as error:
         logger.exception("x_post_failed")
         await _alert(context, f"فشل النشر: {type(error).__name__}: {error}")
         return False
 
-    await save_session(redis, result.storage_state)
+    await save_session(redis, result.cookies)
 
     if not result.verified:
         logger.error("x_post_unverified id=%s", prayer.id)

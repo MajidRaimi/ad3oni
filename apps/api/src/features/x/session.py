@@ -8,6 +8,10 @@ from src.shared.logging.setup import get_logger
 
 logger = get_logger("api.x.session")
 
+Cookies = dict[str, str]
+
+_REQUIRED = ("auth_token", "ct0")
+
 
 def _decode(value: Any) -> str | None:
     if value is None:
@@ -17,36 +21,38 @@ def _decode(value: Any) -> str | None:
     return str(value)
 
 
-def parse_state(raw: str) -> dict[str, Any] | None:
+def parse_cookies(raw: str) -> Cookies | None:
     try:
-        state: dict[str, Any] = json.loads(raw)
+        data: Any = json.loads(raw)
     except (json.JSONDecodeError, TypeError):
         return None
-    if not isinstance(state.get("cookies"), list):
+    if not isinstance(data, dict):
         return None
-    return state
+    if any(not data.get(name) for name in _REQUIRED):
+        return None
+    return {str(k): str(v) for k, v in data.items() if v is not None}
 
 
-async def load_session(redis: ArqRedis, bootstrap: str) -> dict[str, Any] | None:
+async def load_session(redis: ArqRedis, bootstrap: str) -> Cookies | None:
     stored = _decode(await redis.get(X_SESSION))
     if stored:
-        state = parse_state(stored)
-        if state is not None:
-            return state
+        cookies = parse_cookies(stored)
+        if cookies is not None:
+            return cookies
         logger.warning("x_session_in_redis_unparseable falling_back_to_env")
 
     if not bootstrap:
         return None
 
-    state = parse_state(bootstrap)
-    if state is None:
+    cookies = parse_cookies(bootstrap)
+    if cookies is None:
         logger.error("x_session_env_unparseable")
         return None
 
-    await save_session(redis, state)
+    await save_session(redis, cookies)
     logger.info("x_session_bootstrapped_from_env")
-    return state
+    return cookies
 
 
-async def save_session(redis: ArqRedis, state: dict[str, Any]) -> None:
-    await redis.set(X_SESSION, json.dumps(state))
+async def save_session(redis: ArqRedis, cookies: Cookies) -> None:
+    await redis.set(X_SESSION, json.dumps(cookies))

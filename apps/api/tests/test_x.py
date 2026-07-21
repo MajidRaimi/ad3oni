@@ -6,7 +6,9 @@ from arq import ArqRedis
 from src.features.prayers.schema import Prayer
 from src.features.x.keys import MAX_POST_LENGTH, X_SESSION
 from src.features.x.service import compose_post
-from src.features.x.session import load_session, parse_state, save_session
+from src.features.x.session import load_session, parse_cookies, save_session
+
+_COOKIES = {"auth_token": "tok", "ct0": "csrf"}
 
 
 def _prayer(text: str, source: str | None = None) -> Prayer:
@@ -53,46 +55,37 @@ def test_compose_accepts_prayer_at_exactly_the_limit() -> None:
     assert compose_post(_prayer(text)) == text
 
 
-def test_parse_state_rejects_garbage() -> None:
-    assert parse_state("not json") is None
-    assert parse_state('{"no":"cookies"}') is None
-    assert parse_state('{"cookies": []}') == {"cookies": []}
+def test_parse_cookies_requires_both_tokens() -> None:
+    assert parse_cookies("not json") is None
+    assert parse_cookies('{"auth_token": "x"}') is None
+    assert parse_cookies('{"ct0": "x"}') is None
+    assert parse_cookies('{"auth_token": "a", "ct0": ""}') is None
+    assert parse_cookies(json.dumps(_COOKIES)) == _COOKIES
 
 
 @pytest.mark.asyncio
 async def test_session_bootstraps_from_env_then_persists() -> None:
     redis = FakeRedis()
-    bootstrap = json.dumps({"cookies": [{"name": "auth_token"}]})
-
-    state = await load_session(cast(ArqRedis, redis), bootstrap)
-
-    assert state is not None
-    assert state["cookies"][0]["name"] == "auth_token"
+    cookies = await load_session(cast(ArqRedis, redis), json.dumps(_COOKIES))
+    assert cookies == _COOKIES
     assert X_SESSION in redis.values
 
 
 @pytest.mark.asyncio
 async def test_session_prefers_redis_over_env() -> None:
     redis = FakeRedis()
-    redis.values[X_SESSION] = json.dumps({"cookies": [{"name": "fresh"}]})
-    stale = json.dumps({"cookies": [{"name": "stale"}]})
-
-    state = await load_session(cast(ArqRedis, redis), stale)
-
-    assert state is not None
-    assert state["cookies"][0]["name"] == "fresh"
+    redis.values[X_SESSION] = json.dumps({"auth_token": "fresh", "ct0": "fresh"})
+    cookies = await load_session(cast(ArqRedis, redis), json.dumps(_COOKIES))
+    assert cookies is not None
+    assert cookies["auth_token"] == "fresh"
 
 
 @pytest.mark.asyncio
 async def test_session_falls_back_to_env_when_redis_corrupt() -> None:
     redis = FakeRedis()
     redis.values[X_SESSION] = "corrupted"
-    bootstrap = json.dumps({"cookies": [{"name": "auth_token"}]})
-
-    state = await load_session(cast(ArqRedis, redis), bootstrap)
-
-    assert state is not None
-    assert state["cookies"][0]["name"] == "auth_token"
+    cookies = await load_session(cast(ArqRedis, redis), json.dumps(_COOKIES))
+    assert cookies == _COOKIES
 
 
 @pytest.mark.asyncio
@@ -103,9 +96,7 @@ async def test_no_session_anywhere_returns_none() -> None:
 @pytest.mark.asyncio
 async def test_save_session_roundtrips() -> None:
     redis = FakeRedis()
-    state: dict[str, Any] = {"cookies": [{"name": "ct0", "value": "abc"}]}
-
+    state: dict[str, Any] = {"auth_token": "a", "ct0": "b", "extra": "c"}
     await save_session(cast(ArqRedis, redis), state)
     loaded = await load_session(cast(ArqRedis, redis), "")
-
     assert loaded == state
