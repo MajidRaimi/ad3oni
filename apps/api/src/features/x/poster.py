@@ -16,10 +16,10 @@ from patchright.async_api import (
 from src.features.x.keys import (
     _UA_PROBE_DIR,
     _USER_DATA_DIR,
-    ACCOUNT_SWITCHER,
     COMPOSE_URL,
     EDITOR,
     HOME_URL,
+    PROFILE_LINK,
     PROFILE_URL,
     SUBMIT,
     TWEET_TEXT,
@@ -100,20 +100,21 @@ async def _current_cookies(context: BrowserContext) -> Cookies:
     }
 
 
-async def _assert_logged_in(page: Page, handle: str) -> None:
+async def _current_handle(page: Page) -> str:
     await page.goto(HOME_URL, wait_until="domcontentloaded")
     try:
-        await page.wait_for_selector(ACCOUNT_SWITCHER)
+        await page.wait_for_selector(PROFILE_LINK)
     except PlaywrightTimeout as exc:
         raise SessionExpiredError(
             "X did not render a logged-in timeline; the session is invalid or "
             "the account is restricted."
         ) from exc
+    href = await page.locator(PROFILE_LINK).get_attribute("href")
+    return (href or "").strip("/").lstrip("@")
 
-    label = await page.locator(ACCOUNT_SWITCHER).inner_text()
-    actual = next(
-        (part.lstrip("@") for part in label.split() if part.startswith("@")), ""
-    )
+
+async def _assert_logged_in(page: Page, handle: str) -> None:
+    actual = await _current_handle(page)
     if actual.lower() != handle.lstrip("@").lower():
         raise WrongAccountError(
             f"session belongs to @{actual or 'unknown'}, expected @{handle}"
@@ -157,15 +158,7 @@ async def resolve_handle(cookies: Cookies, *, headless: bool, channel: str) -> s
         cookies, headless=headless, channel=channel, timeout_ms=45_000
     ) as context:
         page = await context.new_page()
-        await page.goto(HOME_URL, wait_until="domcontentloaded")
-        try:
-            await page.wait_for_selector(ACCOUNT_SWITCHER)
-        except PlaywrightTimeout as exc:
-            raise SessionExpiredError("session invalid or restricted") from exc
-        label = await page.locator(ACCOUNT_SWITCHER).inner_text()
-        return next(
-            (p.lstrip("@") for p in label.split() if p.startswith("@")), ""
-        )
+        return await _current_handle(page)
 
 
 async def publish(

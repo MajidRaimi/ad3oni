@@ -7,7 +7,7 @@ PROFILE_URL = "https://x.com/{handle}"
 
 EDITOR = '[data-testid="tweetTextarea_0"]'
 SUBMIT = '[data-testid="tweetButton"]'
-ACCOUNT_SWITCHER = '[data-testid="SideNav_AccountSwitcher_Button"]'
+PROFILE_LINK = '[data-testid="AppTabBar_Profile_Link"]'
 TWEET_TEXT = '[data-testid="tweetText"]'
 
 MAX_POST_LENGTH = 280
