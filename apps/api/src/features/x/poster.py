@@ -1,123 +1,87 @@
 from dataclasses import dataclass
-from typing import Any, cast
 
-from playwright.async_api import Page, async_playwright
-from playwright.async_api import TimeoutError as PlaywrightTimeout
-
-from src.features.x.keys import (
-    ACCOUNT_SWITCHER,
-    COMPOSE_URL,
-    EDITOR,
-    HOME_URL,
-    PROFILE_URL,
-    SUBMIT,
-    TOAST,
-    TWEET_TEXT,
+from twikit import Client
+from twikit.errors import (
+    AccountLocked,
+    AccountSuspended,
+    DuplicateTweet,
+    Unauthorized,
 )
+
 from src.shared.logging.setup import get_logger
 
 logger = get_logger("api.x.poster")
 
-_LAUNCH_ARGS = [
-    "--disable-blink-features=AutomationControlled",
-    "--no-sandbox",
-    "--disable-dev-shm-usage",
-]
 _USER_AGENT = (
     "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 "
     "(KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36"
 )
-_VERIFY_SLICE = 40
+
+Cookies = dict[str, str]
 
 
 class SessionExpiredError(RuntimeError):
     pass
 
 
-class PostVerificationError(RuntimeError):
+class WrongAccountError(RuntimeError):
     pass
 
 
 @dataclass(slots=True)
 class PostResult:
     verified: bool
-    storage_state: dict[str, Any]
+    tweet_id: str | None
+    cookies: Cookies
+    duplicate: bool = False
 
 
-async def _assert_logged_in(page: Page, timeout_ms: int) -> None:
+def _client() -> Client:
+    return Client("en-US", user_agent=_USER_AGENT)
+
+
+async def resolve_handle(cookies: Cookies) -> str:
+    client = _client()
+    client.set_cookies(dict(cookies))
     try:
-        await page.wait_for_selector(ACCOUNT_SWITCHER, timeout=timeout_ms)
-    except PlaywrightTimeout as exc:
+        me = await client.user()
+    except (Unauthorized, AccountLocked, AccountSuspended) as exc:
         raise SessionExpiredError(
-            "X session is no longer valid. Re-run scripts/save_x_session.py."
+            f"X session is not usable ({type(exc).__name__})."
+        ) from exc
+    return (me.screen_name or "").lstrip("@")
+
+
+async def publish(text: str, *, cookies: Cookies, handle: str) -> PostResult:
+    client = _client()
+    client.set_cookies(dict(cookies))
+
+    try:
+        me = await client.user()
+    except (Unauthorized, AccountLocked, AccountSuspended) as exc:
+        raise SessionExpiredError(
+            f"X session is not usable ({type(exc).__name__}). "
+            "Re-capture with scripts/build_x_session.py."
         ) from exc
 
+    actual = (me.screen_name or "").lstrip("@").lower()
+    expected = handle.lstrip("@").lower()
+    if actual != expected:
+        raise WrongAccountError(f"session belongs to @{actual}, expected @{expected}")
 
-async def _compose(page: Page, text: str, timeout_ms: int) -> None:
-    await page.goto(COMPOSE_URL, wait_until="domcontentloaded")
-    editor = page.locator(EDITOR)
-    await editor.wait_for(state="visible", timeout=timeout_ms)
-    await editor.click()
-    await page.keyboard.type(text, delay=12)
-
-    submit = page.locator(SUBMIT)
-    await submit.wait_for(state="visible", timeout=timeout_ms)
-    if await submit.is_disabled():
-        raise PostVerificationError("Compose button stayed disabled; text may be too long.")
-    await submit.click()
-
-
-async def _confirm_via_toast(page: Page, timeout_ms: int) -> bool:
     try:
-        await page.wait_for_selector(TOAST, timeout=timeout_ms)
-    except PlaywrightTimeout:
-        return False
-    return True
+        tweet = await client.create_tweet(text=text)
+    except DuplicateTweet:
+        logger.info("x_duplicate_tweet already_posted")
+        return PostResult(
+            verified=True, tweet_id=None, cookies=client.get_cookies(), duplicate=True
+        )
+    except (Unauthorized, AccountLocked, AccountSuspended) as exc:
+        raise SessionExpiredError(f"X rejected the post ({type(exc).__name__}).") from exc
 
-
-async def _confirm_via_profile(page: Page, handle: str, text: str, timeout_ms: int) -> bool:
-    await page.goto(PROFILE_URL.format(handle=handle), wait_until="domcontentloaded")
-    try:
-        await page.wait_for_selector(TWEET_TEXT, timeout=timeout_ms)
-    except PlaywrightTimeout:
-        return False
-    recent = await page.locator(TWEET_TEXT).first.inner_text()
-    needle = text[:_VERIFY_SLICE].strip()
-    return needle in recent
-
-
-async def publish(
-    text: str,
-    *,
-    storage_state: dict[str, Any],
-    handle: str,
-    headless: bool,
-    timeout_ms: int,
-) -> PostResult:
-    async with async_playwright() as playwright:
-        browser = await playwright.chromium.launch(headless=headless, args=_LAUNCH_ARGS)
-        try:
-            context = await browser.new_context(
-                storage_state=storage_state,  # type: ignore[arg-type]
-                locale="ar",
-                timezone_id="Asia/Riyadh",
-                user_agent=_USER_AGENT,
-                viewport={"width": 1280, "height": 900},
-            )
-            page = await context.new_page()
-
-            await page.goto(HOME_URL, wait_until="domcontentloaded")
-            await _assert_logged_in(page, timeout_ms)
-
-            await _compose(page, text, timeout_ms)
-
-            verified = await _confirm_via_toast(page, timeout_ms // 3)
-            if not verified:
-                logger.info("x_toast_missing falling_back_to_profile_readback")
-                verified = await _confirm_via_profile(page, handle, text, timeout_ms)
-
-            refreshed = cast("dict[str, Any]", await context.storage_state())
-            await context.close()
-            return PostResult(verified=verified, storage_state=refreshed)
-        finally:
-            await browser.close()
+    tweet_id = getattr(tweet, "id", None)
+    return PostResult(
+        verified=bool(tweet_id),
+        tweet_id=tweet_id,
+        cookies=client.get_cookies(),
+    )

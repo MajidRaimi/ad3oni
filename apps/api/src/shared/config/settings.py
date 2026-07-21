@@ -63,8 +63,6 @@ class Settings(BaseSettings):
     x_enabled: bool = False
     x_handle: str = "ad3oni_"
     x_session_state: str = ""
-    x_post_timeout_ms: int = 45_000
-    x_headless: bool = True
     x_dry_run: bool = False
 
     @property

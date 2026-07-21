@@ -1,6 +1,6 @@
 [project]
 name = "api"
-version = "0.2.1"
+version = "0.2.2"
 requires-python = ">=3.14"
 dependencies = [
     "fastapi==0.136.3",
@@ -16,8 +16,8 @@ dependencies = [
 ]
 
 [dependency-groups]
-playwright = [
-    "playwright==1.61.0",
+x = [
+    "twikit==2.3.3",
 ]
 dev = [
     "ruff==0.8.6",
@@ -39,6 +39,10 @@ select = ["E", "F", "I", "UP", "B", "ASYNC", "SIM"]
 python_version = "3.14"
 strict = true
 files = ["src", "tests"]
+
+[[tool.mypy.overrides]]
+module = ["twikit.*"]
+ignore_missing_imports = true
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"

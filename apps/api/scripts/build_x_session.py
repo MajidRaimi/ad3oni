@@ -1,7 +1,6 @@
 import json
 import os
 from pathlib import Path
-from typing import Any
 
 _OUTPUT = Path(__file__).resolve().parent.parent / "x-session.json"
 
@@ -10,7 +9,7 @@ Build an X session from the browser you are already logged into.
 
 Nothing here talks to X, so it cannot trigger a login restriction.
 
-  1. Open https://x.com in your normal browser, already logged in.
+  1. Open https://x.com in your normal browser, signed in as the posting account.
   2. Open DevTools (cmd+alt+i) -> Application -> Storage -> Cookies -> https://x.com
   3. Copy the values of these two cookies:
 
@@ -25,19 +24,6 @@ Treat both values as passwords. Anyone holding them is logged in as you.
 """
 
 
-def _cookie(name: str, value: str) -> dict[str, Any]:
-    return {
-        "name": name,
-        "value": value,
-        "domain": ".x.com",
-        "path": "/",
-        "expires": -1,
-        "httpOnly": name == "auth_token",
-        "secure": True,
-        "sameSite": "None" if name == "auth_token" else "Lax",
-    }
-
-
 def main() -> None:
     auth_token = os.environ.get("X_AUTH_TOKEN", "").strip()
     ct0 = os.environ.get("X_CT0", "").strip()
@@ -46,11 +32,8 @@ def main() -> None:
         print(_INSTRUCTIONS)
         raise SystemExit(1)
 
-    state = {
-        "cookies": [_cookie("auth_token", auth_token), _cookie("ct0", ct0)],
-        "origins": [],
-    }
-    _OUTPUT.write_text(json.dumps(state), encoding="utf-8")
+    cookies = {"auth_token": auth_token, "ct0": ct0}
+    _OUTPUT.write_text(json.dumps(cookies), encoding="utf-8")
 
     print(f"wrote {_OUTPUT}")
     print("\nNext:")
