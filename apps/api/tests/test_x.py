@@ -6,7 +6,12 @@ from arq import ArqRedis
 from src.features.prayers.schema import Prayer
 from src.features.x.keys import MAX_POST_LENGTH, X_SESSION
 from src.features.x.service import compose_post
-from src.features.x.session import load_session, parse_cookies, save_session
+from src.features.x.session import (
+    load_session,
+    parse_cookies,
+    save_session,
+    to_browser_cookies,
+)
 
 _COOKIES = {"auth_token": "tok", "ct0": "csrf"}
 
@@ -53,6 +58,15 @@ def test_compose_returns_none_when_prayer_itself_is_too_long() -> None:
 def test_compose_accepts_prayer_at_exactly_the_limit() -> None:
     text = "ا" * MAX_POST_LENGTH
     assert compose_post(_prayer(text)) == text
+
+
+def test_to_browser_cookies_shapes_both_for_x_domain() -> None:
+    browser = to_browser_cookies(_COOKIES)
+    by_name = {c["name"]: c for c in browser}
+    assert set(by_name) == {"auth_token", "ct0"}
+    assert all(c["domain"] == ".x.com" and c["secure"] for c in browser)
+    assert by_name["auth_token"]["httpOnly"] is True
+    assert by_name["ct0"]["httpOnly"] is False
 
 
 def test_parse_cookies_requires_both_tokens() -> None:

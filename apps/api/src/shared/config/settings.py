@@ -64,6 +64,9 @@ class Settings(BaseSettings):
     x_handle: str = "ad3oni_"
     x_session_state: str = ""
     x_dry_run: bool = False
+    x_headless: bool = True
+    x_channel: str = ""
+    x_nav_timeout_ms: int = 45_000
 
     @property
     def is_production(self) -> bool:

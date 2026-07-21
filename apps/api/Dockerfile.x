@@ -1,42 +1,30 @@
-FROM ghcr.io/astral-sh/uv:python3.14-bookworm-slim AS builder
+FROM mcr.microsoft.com/playwright/python:v1.61.0-noble AS runtime
 
-ENV UV_COMPILE_BYTECODE=1
+ENV PYTHONUNBUFFERED=1
+ENV PYTHONPATH=/app
 ENV UV_LINK_MODE=copy
+ENV UV_PROJECT_ENVIRONMENT=/app/.venv
+ENV PATH="/app/.venv/bin:$PATH"
 
 WORKDIR /app
 
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
+
 COPY pyproject.toml uv.lock ./
 
-RUN --mount=type=cache,target=/root/.cache/uv \
-    uv sync --frozen --no-install-project --no-dev --group x
+RUN uv sync --frozen --no-install-project --no-dev --group x
+
+# Patchright's patched Chromium. Branded Google Chrome does not ship for Linux
+# arm64, and the server is arm64, so channel="chrome" is unavailable; this
+# patched Chromium is the arm64 option and still fixes the webdriver/CDP leaks.
+RUN patchright install chromium
 
 COPY src ./src
 COPY scripts ./scripts
 
-RUN --mount=type=cache,target=/root/.cache/uv \
-    uv sync --frozen --no-dev --group x
-
-FROM python:3.14-slim-bookworm AS runtime
-
-ENV PYTHONUNBUFFERED=1
-ENV PYTHONPATH=/app
-ENV PATH="/app/.venv/bin:$PATH"
-
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends procps \
-    && rm -rf /var/lib/apt/lists/*
-
-RUN groupadd --system app && useradd --system --gid app --no-create-home app
-
-WORKDIR /app
-
-COPY --from=builder --chown=app:app /app/.venv /app/.venv
-COPY --from=builder --chown=app:app /app/src /app/src
-COPY --from=builder --chown=app:app /app/scripts /app/scripts
-
-USER app
-
 HEALTHCHECK --interval=60s --timeout=10s --start-period=20s --retries=3 \
     CMD test "$PROCESS" = "once" || pgrep -f "arq src.x_worker" > /dev/null || exit 1
 
-CMD ["sh", "-c", "if [ \"$PROCESS\" = \"once\" ]; then exec python -m scripts.post_daily_to_x; else exec arq src.x_worker.WorkerSettings; fi"]
+# Headed Chrome (patchright's recommended stealth mode) needs a display; xvfb-run
+# provides a virtual one inside the container.
+CMD ["sh", "-c", "if [ \"$PROCESS\" = \"once\" ]; then exec xvfb-run -a python -m scripts.post_daily_to_x; else exec xvfb-run -a arq src.x_worker.WorkerSettings; fi"]

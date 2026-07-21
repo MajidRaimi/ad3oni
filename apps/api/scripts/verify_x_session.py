@@ -19,9 +19,12 @@ async def main() -> None:
         print("session file is not a JSON object with auth_token and ct0")
         raise SystemExit(1)
 
-    expected = get_settings().x_handle.lstrip("@")
+    settings = get_settings()
+    expected = settings.x_handle.lstrip("@")
     try:
-        handle = await resolve_handle(cookies)
+        handle = await resolve_handle(
+            cookies, headless=settings.x_headless, channel=settings.x_channel
+        )
     except SessionExpiredError as error:
         print(f"session is NOT valid: {error}")
         raise SystemExit(1) from error

@@ -1,6 +1,6 @@
 [project]
 name = "api"
-version = "0.2.3"
+version = "0.2.4"
 requires-python = ">=3.14"
 dependencies = [
     "fastapi==0.136.3",
@@ -17,7 +17,7 @@ dependencies = [
 
 [dependency-groups]
 x = [
-    "twikit==2.3.3",
+    "patchright==1.61.2",
 ]
 dev = [
     "ruff==0.8.6",
@@ -41,7 +41,7 @@ strict = true
 files = ["src", "tests"]
 
 [[tool.mypy.overrides]]
-module = ["twikit.*"]
+module = ["patchright.*"]
 ignore_missing_imports = true
 
 [tool.pytest.ini_options]

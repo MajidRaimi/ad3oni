@@ -81,7 +81,14 @@ async def post_daily_to_x(context: WorkerContext, redis: ArqRedis) -> bool:
         return False
 
     try:
-        result = await publish(text, cookies=cookies, handle=settings.x_handle)
+        result = await publish(
+            text,
+            cookies=cookies,
+            handle=settings.x_handle,
+            headless=settings.x_headless,
+            channel=settings.x_channel,
+            timeout_ms=settings.x_nav_timeout_ms,
+        )
     except SessionExpiredError as error:
         logger.error("x_session_expired")
         await _alert(context, f"انتهت صلاحية الجلسة: {error}")
