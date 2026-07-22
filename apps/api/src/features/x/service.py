@@ -30,13 +30,10 @@ logger = get_logger("api.x.service")
 
 
 def compose_post(prayer: Prayer) -> str | None:
+    """The tweet is the du'a and nothing else: no source, type, or attribution."""
     text = prayer.text.strip()
     if len(text) > MAX_POST_LENGTH:
         return None
-    if prayer.source:
-        with_source = f"{text}\n\n{prayer.source.strip()}"
-        if len(with_source) <= MAX_POST_LENGTH:
-            return with_source
     return text
 
 
