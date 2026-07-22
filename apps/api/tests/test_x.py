@@ -39,16 +39,16 @@ class FakeRedis:
         self.values[key] = value
 
 
-def test_compose_appends_source_when_it_fits() -> None:
+def test_compose_never_appends_the_source() -> None:
     post = compose_post(_prayer("اللهم اغفر لي", "صحيح مسلم"))
-    assert post == "اللهم اغفر لي\n\nصحيح مسلم"
+    assert post == "اللهم اغفر لي"
+    assert "صحيح مسلم" not in (post or "")
 
 
-def test_compose_drops_source_when_it_would_overflow() -> None:
-    text = "ا" * (MAX_POST_LENGTH - 3)
-    post = compose_post(_prayer(text, "صحيح البخاري"))
-    assert post == text
-    assert len(post or "") <= MAX_POST_LENGTH
+def test_compose_is_only_the_prayer_text_even_with_room_to_spare() -> None:
+    post = compose_post(_prayer("اللهم ارزقني الصبر", "سنن الترمذي"))
+    assert post == "اللهم ارزقني الصبر"
+    assert "\n" not in (post or "")
 
 
 def test_compose_returns_none_when_prayer_itself_is_too_long() -> None:
